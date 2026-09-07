@@ -1,0 +1,20 @@
+{
+  "name": "gdg-challenge-01-debugging",
+  "version": "1.0.0",
+  "description": "Challenge 01: EventDispatcher Concurrency & Webhook Retries",
+  "main": "dist/dispatcher.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["debugging", "concurrency", "retry", "backoff", "iso8601", "event-dispatcher"],
+  "author": "23A81A4397",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.5",
+    "typescript": "^5.4.5"
+  }
+}

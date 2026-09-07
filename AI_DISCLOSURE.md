@@ -12,7 +12,8 @@
 
 ---
 
-## 🛠️ Summary of AI Tools Utilized
+## Summary of AI Tools:
+Google Gemini (2.0 Flash / 3.7 Flash) and GitHub Copilot were utilized for scaffolding, test-case synthesis, and architectural review.
 
 Check all that apply:
 - [x] Google Gemini (2.0 Flash / 3.7 Flash)
@@ -25,7 +26,8 @@ Check all that apply:
 
 ---
 
-## 📝 Activity Breakdown
+## Activity Breakdown:
+AI assistance was utilized across architectural design, debugging, testing, and UI styling:
 
 | Activity Category | AI Used? (Yes/No) | Specific Tool | Brief Description of Usage |
 | :--- | :---: | :--- | :--- |
@@ -39,7 +41,8 @@ Check all that apply:
 
 ---
 
-## 🔍 Detailed Usage Log (Prompts & Iterations)
+## Detailed Usage Log:
+Detailed record of candidate prompts, AI suggestions, and manual validations across all three challenges:
 
 ### 1. Challenge 01 — Debugging & Root-Cause Analysis
 - **Intent / Prompt:**
@@ -77,7 +80,8 @@ Check all that apply:
 
 ---
 
-## 💡 Candidate Reflection & Code Comprehension
+## Candidate Reflection:
+The candidate maintains 100% technical ownership and understanding of all submitted code.
 
 1. **How did using AI affect your development velocity and code quality?**
    > AI significantly accelerated boilerplate generation, comprehensive test synthesis, and UI styling. However, deep engineering oversight was required to ensure correct transaction handling in SQLite, verify graph cycle propagation, and guarantee strict determinism across edge cases.

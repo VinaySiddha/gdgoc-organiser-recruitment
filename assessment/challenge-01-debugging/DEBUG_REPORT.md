@@ -17,7 +17,7 @@
 
 ## 🕵️ Diagnostic Process & Root Cause
 
-### 1. Reproduction Steps
+### Reproduction Steps:
 The race condition was reproduced locally by firing 50 concurrent requests simultaneously with distinct IDs, names, and event IDs:
 ```bash
 # Run the automated regression test harness
@@ -29,7 +29,7 @@ Under concurrency in the flawed reference implementation:
 - The shared property `this.activeContext` was overwritten by subsequent concurrent requests before earlier asynchronous validation operations (`setTimeout` / `asyncio.sleep`) completed.
 - When `this.registrationStore.set()` executed, it used the mutated `this.activeContext`, storing the newest attendee's data under multiple different registration IDs.
 
-### 2. Root Cause Analysis
+### Root Cause Analysis:
 A comprehensive audit identified four intertwined root causes:
 
 1. **Shared Mutable Request State Across Asynchronous Contexts:**
@@ -44,7 +44,7 @@ A comprehensive audit identified four intertwined root causes:
 4. **Missing Exponential Backoff & Swallowed Errors:**
    The retry loop made immediate tight retries without exponential backoff or jitter, exacerbating downstream gateway timeouts (503 Service Unavailable) and swallowing exceptions on final failure without updating audit logs.
 
-### 3. Key Flaws in the Original Code
+### Key Flaws in the Original Code:
 - **Flaw 1:** Mutating instance-level state `this.activeContext = payload;` across overlapping asynchronous tasks.
 - **Flaw 2:** Unawaited fire-and-forget webhook execution without error boundaries or lifecycle tracking.
 - **Flaw 3:** Lack of backoff delay in retry loop causing thundering herd problems during downstream outages.
@@ -52,9 +52,9 @@ A comprehensive audit identified four intertwined root causes:
 
 ---
 
-## 🛠️ Implemented Fix & Code Changes
+## 🛠️ Implemented Fix & Code Changes:
 
-### Summary of Changes
+### Fix Summary:
 1. **Eliminated Shared Mutable State:** Removed `activeContext` entirely. Every registration is cloned into an immutable request-local object passed explicitly through functions.
 2. **Robust ISO-8601 Timestamp Validation:** Added strict regex and offset parsing for ISO-8601 timestamps supporting `Z`, positive (`+05:30`), and negative (`-04:00`) offsets.
 3. **Structured Exponential Backoff:** Implemented delay calculation:
@@ -89,13 +89,13 @@ A comprehensive audit identified four intertwined root causes:
 
 ## 🧪 Testing & Regression Verification
 
-### 1. Test Cases Added
+### Test Cases Added:
 - **Test Case 1 (50 Concurrent Registrations):** Executes 50 parallel registrations with unique IDs and verify all 50 records exist in the store with zero data collision.
 - **Test Case 2 (Timezone Offset Parsing):** Validates ISO-8601 timestamps with UTC (`Z`), Indian Standard Time (`+05:30`), and US Eastern (`-04:00`).
 - **Test Case 3 (Exponential Backoff Retry):** Simulates transient 503 HTTP errors and confirms retries succeed with increasing delays.
 - **Test Case 4 (Failure Isolation):** Verifies that when downstream webhooks fail permanently, the registration record remains intact and audit logs record `FAILED`.
 
-### 2. Test Execution Output
+### Test Execution Output
 ```text
 ============================= test session starts =============================
 platform win32 -- Python 3.12.5, pytest-8.3.2, pluggy-1.5.0
@@ -113,7 +113,9 @@ assessment/challenge-01-debugging/tests/test_dispatcher.py::test_webhook_retry_e
 
 ---
 
-## 🛡️ Long-term Prevention & Architectural Recommendations
+## 🛡️ Long-term Prevention & Architectural Recommendations:
+
+### Prevention Strategy:
 1. **Adopt Immutable Data Patterns:** Enforce readonly TypeScript interfaces (`Readonly<T>`) and lint rules banning instance mutation inside asynchronous request handlers.
 2. **Outbox Pattern for Reliable Messaging:** Decouple transaction persistence from external webhook delivery using an Outbox queue table backed by Redis or PostgreSQL, ensuring at-least-once delivery with background worker processing.
 3. **Strict ISO-8601 Schema Validation:** Enforce request schema validation at the API boundary using Zod or Pydantic before handlers execute.

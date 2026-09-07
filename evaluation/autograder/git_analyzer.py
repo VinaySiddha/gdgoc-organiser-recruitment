@@ -36,8 +36,8 @@ def evaluate_git() -> Dict:
     else:
         notes.append("❌ No git history found")
 
-    # Check commit message conventions
-    conventional_patterns = re.compile(r"^(feat|fix|docs|style|refactor|test|chore|perf|ci)(\(.+\))?:", re.IGNORECASE)
+    # Check commit message conventions (handling git log --oneline hash prefix)
+    conventional_patterns = re.compile(r"(?:^[0-9a-f]+\s+)?(feat|fix|docs|style|refactor|test|chore|perf|ci)(\(.+\))?:", re.IGNORECASE)
     conventional_matches = [c for c in commit_log if conventional_patterns.search(c)]
     if len(conventional_matches) >= 3:
         points += 1.5

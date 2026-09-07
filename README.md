@@ -9,7 +9,7 @@
 [![AI Policy](https://img.shields.io/badge/AI%20Assistance-Permitted%20with%20Disclosure-FBBC04?style=for-the-badge&logo=google-gemini&logoColor=black)](docs/AI_USAGE_POLICY.md)
 
 <p align="center">
-  <strong>Welcome to the technical evaluation phase for GDG on Campus Sri Venkateswara College of Engineering (SVEC) Core Team 4.0.</strong><br>
+  <strong>Welcome to the technical evaluation phase for GDG on Campus Sri Vasavi Engineering College (SVEC) Core Team 4.0.</strong><br>
   This assessment is designed to evaluate your practical engineering, problem-solving, architectural thinking, and community-readiness.
 </p>
 
@@ -127,6 +127,12 @@ Every submission is evaluated against an objective, multi-dimensional rubric:
 | **Total** | **100** | |
 
 *See full scoring criteria in [evaluation/RUBRIC.md](evaluation/RUBRIC.md).*
+
+### ⚡ Zero-Manual-Effort Automated Evaluation
+Submissions are automatically scored upon every push by the repository's autograder (`.github/workflows/auto-evaluate.yml`). 
+- **Automated Scorecard:** Generated automatically in GitHub Actions Step Summary.
+- **Artifacts:** `EVALUATION_REPORT.md` and `evaluation_report.json` attached to each run.
+- **Local Run:** Run `python3 evaluation/autograder/evaluator.py` to test your score before submitting.
 
 ---
 

@@ -44,16 +44,32 @@ graph TD
 
 ---
 
+## ⚡ Automated 100-Point Evaluation Engine (Zero Manual Effort)
+
+This repository includes a fully automated **Autograder Pipeline** that scores candidate submissions automatically across all 8 rubric dimensions upon every commit, pull request, or local run.
+
+### How Automated Evaluation Works:
+1. **GitHub Actions Automation (`.github/workflows/auto-evaluate.yml`):**
+   - Automatically executes whenever a candidate pushes code or creates a PR.
+   - Computes an objective score out of **100 Points** matching `RUBRIC.md`.
+   - Posts a rich visual scorecard into the **GitHub Step Summary** and attaches `evaluation_report.json` and `EVALUATION_REPORT.md` as downloadable artifacts.
+2. **Local Organizer Execution:**
+   - Evaluators can grade any candidate's repository locally in 3 seconds by running:
+     ```bash
+     python3 evaluation/autograder/evaluator.py
+     ```
+   - Automatically generates the candidate's score, breakdown, tier classification, and shortlisting recommendation.
+
+---
+
 ## 📋 Step-by-Step Evaluation Workflow
 
 ```mermaid
 flowchart TD
-    S1[1. Automated CI & Secret Check] --> S2[2. Git History & Commit Audit]
-    S2 --> S3[3. Challenge 01: RCA & Fix Review]
-    S3 --> S4[4. Challenge 02: Constraint & Algorithm Review]
-    S4 --> S5[5. Challenge 03: Practical App Execution]
-    S5 --> S6[6. Documentation & AI Disclosure Audit]
-    S6 --> S7[7. Final Score Entry & Interview Notes]
+    S1[1. Candidate Pushes Submission] --> S2[2. GitHub Actions Runs Autograder]
+    S2 --> S3[3. Automated 100-Pt Scorecard Generated]
+    S3 --> S4[4. Automated Qualification Tier Assigned]
+    S4 --> S5[5. Shortlisted Candidates Invited for Interview]
 ```
 
 ### Step 1: CI Workflows & Security Verification

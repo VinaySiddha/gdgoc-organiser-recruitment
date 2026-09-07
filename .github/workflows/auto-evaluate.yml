@@ -1,0 +1,50 @@
+name: Automatic Assessment Evaluation
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  autograder:
+    name: Run Autograder (100-Point Rubric)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python Runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Test Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pytest flake8
+
+      - name: Execute Automated 100-Point Autograder
+        run: |
+          python3 evaluation/autograder/evaluator.py
+
+      - name: Upload Evaluation Report Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-results
+          path: |
+            EVALUATION_REPORT.md
+            evaluation_report.json
+          retention-days: 30

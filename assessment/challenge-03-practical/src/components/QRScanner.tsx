@@ -160,11 +160,11 @@ export const QRScanner: React.FC = () => {
               </div>
             )}
 
-            {result.status === 'INVALID_TICKET' && (
+            {(result.status === 'INVALID_TICKET' || result.status === 'ERROR') && (
               <div className="bg-red-950/40 border border-red-500/50 rounded-2xl p-5 text-red-200 space-y-2">
                 <div className="flex items-center gap-2.5 text-red-400 font-bold text-sm">
                   <XCircle className="w-5 h-5" />
-                  <span>INVALID TICKET IDENTIFIER</span>
+                  <span>{result.status === 'ERROR' ? 'SYSTEM / NETWORK ERROR' : 'INVALID TICKET IDENTIFIER'}</span>
                 </div>
                 <p className="text-xs text-red-300/90">{result.message}</p>
               </div>

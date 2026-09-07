@@ -1,5 +1,4 @@
-# validation.py - Input Validation for Conference Scheduler
-
+import math
 from typing import List, Dict, Tuple, Any
 from utils import time_to_minutes
 
@@ -20,14 +19,21 @@ def validate_scheduler_inputs(
 
     if isinstance(sessions, list):
         for s in sessions:
-            if isinstance(s, dict) and str(s.get("id", "")).strip():
+            if isinstance(s, dict) and s.get("id") is not None and str(s["id"]).strip():
                 all_session_ids.add(str(s["id"]).strip())
 
     if isinstance(sessions, list):
         for s in sessions:
             if not isinstance(s, dict):
+                invalid_session_errors.append({
+                    "sessionId": "UNKNOWN_SESSION",
+                    "reason": "INVALID_DATA",
+                    "details": "Session entry is not a dictionary"
+                })
                 continue
-            s_id = str(s.get("id", "")).strip()
+
+            raw_id = s.get("id")
+            s_id = str(raw_id).strip() if raw_id is not None else ""
             if not s_id:
                 invalid_session_errors.append({
                     "sessionId": "UNKNOWN_SESSION",
@@ -45,7 +51,8 @@ def validate_scheduler_inputs(
                 continue
             seen_session_ids.add(s_id)
 
-            if not str(s.get("title", "")).strip():
+            title_val = s.get("title")
+            if title_val is None or not str(title_val).strip():
                 invalid_session_errors.append({
                     "sessionId": s_id,
                     "reason": "INVALID_DATA",
@@ -53,7 +60,8 @@ def validate_scheduler_inputs(
                 })
                 continue
 
-            if not str(s.get("speakerId", "")).strip():
+            speaker_val = s.get("speakerId")
+            if speaker_val is None or not str(speaker_val).strip():
                 invalid_session_errors.append({
                     "sessionId": s_id,
                     "reason": "INVALID_DATA",
@@ -62,7 +70,16 @@ def validate_scheduler_inputs(
                 continue
 
             dur = s.get("durationMinutes")
-            if not isinstance(dur, (int, float)) or dur <= 0 or dur > 1440:
+            if (
+                dur is None or
+                not isinstance(dur, (int, float)) or
+                isinstance(dur, bool) or
+                math.isnan(dur) or
+                not math.isfinite(dur) or
+                dur <= 0 or
+                dur > 1440 or
+                dur % 1 != 0
+            ):
                 invalid_session_errors.append({
                     "sessionId": s_id,
                     "reason": "INVALID_DATA",
@@ -71,7 +88,15 @@ def validate_scheduler_inputs(
                 continue
 
             att = s.get("expectedAttendees")
-            if not isinstance(att, (int, float)) or att < 0:
+            if (
+                att is None or
+                not isinstance(att, (int, float)) or
+                isinstance(att, bool) or
+                math.isnan(att) or
+                not math.isfinite(att) or
+                att < 0 or
+                att % 1 != 0
+            ):
                 invalid_session_errors.append({
                     "sessionId": s_id,
                     "reason": "INVALID_DATA",
@@ -80,7 +105,16 @@ def validate_scheduler_inputs(
                 continue
 
             pop = s.get("popularityScore")
-            if not isinstance(pop, (int, float)) or pop < 1 or pop > 100:
+            if (
+                pop is None or
+                not isinstance(pop, (int, float)) or
+                isinstance(pop, bool) or
+                math.isnan(pop) or
+                not math.isfinite(pop) or
+                pop < 1 or
+                pop > 100 or
+                pop % 1 != 0
+            ):
                 invalid_session_errors.append({
                     "sessionId": s_id,
                     "reason": "INVALID_DATA",
@@ -102,7 +136,7 @@ def validate_scheduler_inputs(
 
             has_unknown_prereq = False
             for p in prereqs:
-                if p not in all_session_ids:
+                if str(p).strip() not in all_session_ids:
                     invalid_session_errors.append({
                         "sessionId": s_id,
                         "reason": "INVALID_DATA",
@@ -120,8 +154,8 @@ def validate_scheduler_inputs(
                 "durationMinutes": int(dur),
                 "expectedAttendees": int(att),
                 "popularityScore": int(pop),
-                "prerequisites": prereqs,
-                "tags": s.get("tags", [])
+                "prerequisites": [str(p).strip() for p in prereqs],
+                "tags": s.get("tags", []) if isinstance(s.get("tags"), list) else []
             })
 
     seen_room_ids = set()
@@ -129,13 +163,21 @@ def validate_scheduler_inputs(
         for r in rooms:
             if not isinstance(r, dict):
                 continue
-            r_id = str(r.get("id", "")).strip()
+            raw_r_id = r.get("id")
+            r_id = str(raw_r_id).strip() if raw_r_id is not None else ""
             if not r_id or r_id in seen_room_ids:
                 continue
             seen_room_ids.add(r_id)
 
             cap = r.get("capacity")
-            if not isinstance(cap, (int, float)) or cap <= 0:
+            if (
+                cap is None or
+                not isinstance(cap, (int, float)) or
+                isinstance(cap, bool) or
+                math.isnan(cap) or
+                not math.isfinite(cap) or
+                cap <= 0
+            ):
                 continue
 
             valid_windows = []
@@ -143,15 +185,15 @@ def validate_scheduler_inputs(
             if isinstance(windows, list):
                 for w in windows:
                     if isinstance(w, dict) and "start" in w and "end" in w:
-                        s_min = time_to_minutes(w["start"])
-                        e_min = time_to_minutes(w["end"])
+                        s_min = time_to_minutes(str(w["start"]))
+                        e_min = time_to_minutes(str(w["end"]))
                         if s_min >= 0 and e_min >= 0 and s_min < e_min:
-                            valid_windows.append({"start": w["start"], "end": w["end"]})
+                            valid_windows.append({"start": str(w["start"]), "end": str(w["end"])})
 
             if valid_windows:
                 valid_rooms.append({
                     "id": r_id,
-                    "name": str(r.get("name", r_id)).strip(),
+                    "name": str(r.get("name") if r.get("name") is not None else r_id).strip(),
                     "capacity": int(cap),
                     "availableWindows": valid_windows
                 })

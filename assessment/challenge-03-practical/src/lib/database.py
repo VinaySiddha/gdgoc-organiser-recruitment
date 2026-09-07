@@ -134,10 +134,15 @@ class EventHubDatabase:
     ) -> Tuple[str, Optional[Dict[str, Any]], Optional[str]]:
         """
         Atomic Check-In with concurrent duplicate check-in protection.
+        Supports ticket ID, roll number, or email lookup.
         Returns (status, ticket_data, error_message).
         status: 'VALID_TICKET' | 'ALREADY_CHECKED_IN' | 'INVALID_TICKET'
         """
         now = datetime.now(timezone.utc).isoformat()
+        clean_input = str(ticket_id).strip() if ticket_id is not None else ""
+        if not clean_input:
+            return "INVALID_TICKET", None, "Missing ticket identifier"
+
         with self._lock:
             try:
                 self._conn.execute("BEGIN TRANSACTION;")
@@ -147,15 +152,16 @@ class EventHubDatabase:
                     SELECT t.id, t.status, a.full_name, a.email, a.roll_number, a.department, a.year
                     FROM tickets t
                     JOIN attendees a ON t.attendee_id = a.id
-                    WHERE t.id = ?
+                    WHERE t.id = ? OR UPPER(a.roll_number) = UPPER(?) OR LOWER(a.email) = LOWER(?)
                     """,
-                    (ticket_id,)
+                    (clean_input, clean_input, clean_input)
                 )
                 row = cur.fetchone()
                 if not row:
                     self._conn.execute("ROLLBACK;")
-                    return "INVALID_TICKET", None, f"Ticket ID '{ticket_id}' not found"
+                    return "INVALID_TICKET", None, f"Ticket or attendee identifier '{clean_input}' not found"
 
+                real_ticket_id = row["id"]
                 if row["status"] == "CHECKED_IN":
                     self._conn.execute("ROLLBACK;")
                     return "ALREADY_CHECKED_IN", dict(row), "Ticket has already been checked in"
@@ -166,12 +172,12 @@ class EventHubDatabase:
                     INSERT INTO check_ins (id, ticket_id, scanned_at, scanned_by, device_info)
                     VALUES (?, ?, ?, ?, ?)
                     """,
-                    (checkin_id, ticket_id, now, scanned_by, device_info)
+                    (checkin_id, real_ticket_id, now, scanned_by, device_info)
                 )
 
                 self._conn.execute(
                     "UPDATE tickets SET status = 'CHECKED_IN' WHERE id = ?",
-                    (ticket_id,)
+                    (real_ticket_id,)
                 )
 
                 self._conn.execute("COMMIT;")

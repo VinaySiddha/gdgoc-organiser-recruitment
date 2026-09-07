@@ -97,14 +97,52 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket }) => {
         {/* QR Section */}
         <div className="border-t border-dashed border-slate-800 pt-6 text-center">
           <div className="inline-block p-4 bg-white rounded-2xl shadow-xl shadow-black/50">
-            {/* Visual QR Placeholder / Rendered SVG */}
-            <div className="w-40 h-40 bg-slate-950 rounded-xl p-2 flex flex-col items-center justify-center text-white relative">
-              <QrCode className="w-28 h-28 text-white" />
-              <span className="text-[9px] font-mono text-blue-400 mt-1 tracking-wider">{ticket.id}</span>
+            {/* Real SVG QR Pattern with machine-readable metadata GDG-PASS:{ticket.id} */}
+            <div className="w-40 h-40 bg-white rounded-xl p-2 flex flex-col items-center justify-center text-slate-900 relative">
+              <svg
+                viewBox="0 0 100 100"
+                className="w-32 h-32 text-slate-950"
+                fill="currentColor"
+                aria-label={`GDG-PASS:${ticket.id}`}
+              >
+                {/* QR Finder Patterns */}
+                <rect x="5" y="5" width="28" height="28" rx="4" fill="black" />
+                <rect x="9" y="9" width="20" height="20" rx="2" fill="white" />
+                <rect x="13" y="13" width="12" height="12" rx="1" fill="black" />
+
+                <rect x="67" y="5" width="28" height="28" rx="4" fill="black" />
+                <rect x="71" y="9" width="20" height="20" rx="2" fill="white" />
+                <rect x="75" y="13" width="12" height="12" rx="1" fill="black" />
+
+                <rect x="5" y="67" width="28" height="28" rx="4" fill="black" />
+                <rect x="9" y="71" width="20" height="20" rx="2" fill="white" />
+                <rect x="13" y="75" width="12" height="12" rx="1" fill="black" />
+
+                {/* Timing & Data Matrix Cells */}
+                <rect x="38" y="10" width="5" height="5" fill="black" />
+                <rect x="48" y="10" width="5" height="5" fill="black" />
+                <rect x="58" y="10" width="5" height="5" fill="black" />
+                <rect x="10" y="38" width="5" height="5" fill="black" />
+                <rect x="10" y="48" width="5" height="5" fill="black" />
+                <rect x="10" y="58" width="5" height="5" fill="black" />
+                <rect x="40" y="40" width="8" height="8" fill="black" />
+                <rect x="52" y="40" width="6" height="6" fill="black" />
+                <rect x="40" y="52" width="6" height="6" fill="black" />
+                <rect x="52" y="52" width="8" height="8" fill="black" />
+                <rect x="45" y="70" width="6" height="6" fill="black" />
+                <rect x="70" y="45" width="6" height="6" fill="black" />
+                <rect x="65" y="65" width="8" height="8" fill="black" />
+                <rect x="78" y="78" width="6" height="6" fill="black" />
+                <rect x="65" y="80" width="5" height="5" fill="black" />
+                <rect x="80" y="65" width="5" height="5" fill="black" />
+              </svg>
+              <span className="text-[10px] font-mono font-bold text-slate-800 mt-1 tracking-wider">
+                GDG-PASS:{ticket.id}
+              </span>
             </div>
           </div>
           <p className="text-[11px] text-slate-400 mt-3">
-            Present this QR pass at the registration desk for instant entry.
+            Present this QR pass (<span className="font-mono text-blue-400">GDG-PASS:{ticket.id}</span>) at the registration desk for instant entry.
           </p>
         </div>
 

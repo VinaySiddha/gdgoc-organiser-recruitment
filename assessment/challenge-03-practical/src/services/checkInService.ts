@@ -5,9 +5,9 @@ import { globalRepository, EventHubRepository } from '../lib/db';
 export class CheckInService {
   constructor(private repo: EventHubRepository = globalRepository) {}
 
-  public parseTicketId(rawInput: string): string {
-    if (!rawInput) return '';
-    const clean = rawInput.trim();
+  public parseTicketId(rawInput: any): string {
+    if (rawInput === undefined || rawInput === null) return '';
+    const clean = String(rawInput).trim();
     if (clean.startsWith('GDG-PASS:')) {
       return clean.replace('GDG-PASS:', '').trim();
     }
@@ -15,7 +15,7 @@ export class CheckInService {
   }
 
   public checkIn(
-    rawInput: string,
+    rawInput: any,
     scannedBy: string = 'ORGANIZER_DESK',
     deviceInfo?: string
   ): CheckInResult {
@@ -35,7 +35,7 @@ export class CheckInService {
         success: true,
         status: 'VALID_TICKET',
         message: `Welcome ${res.attendee.fullName}! Check-in verified.`,
-        ticketId,
+        ticketId: res.ticket ? res.ticket.id : ticketId,
         attendee: {
           fullName: res.attendee.fullName,
           email: res.attendee.email,
@@ -50,7 +50,7 @@ export class CheckInService {
         success: false,
         status: 'ALREADY_CHECKED_IN',
         message: 'Security Alert: Ticket has ALREADY BEEN CHECKED IN',
-        ticketId,
+        ticketId: res.ticket ? res.ticket.id : ticketId,
         attendee: res.attendee
           ? {
               fullName: res.attendee.fullName,

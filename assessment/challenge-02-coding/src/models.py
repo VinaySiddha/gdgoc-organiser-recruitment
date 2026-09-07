@@ -20,7 +20,7 @@ class TimeWindow:
 class Room:
     id: str
     name: str
-    capacity: number = 0
+    capacity: int = 0
     availableWindows: List[TimeWindow] = field(default_factory=list)
 
 @dataclass

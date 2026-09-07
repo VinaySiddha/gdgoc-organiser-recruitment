@@ -136,7 +136,11 @@ export class EventDispatcher {
     while (attempts < this.config.maxRetries && !delivered) {
       attempts++;
       try {
-        await this.networkSender(this.config.targetUrl, record);
+        const sendPromise = this.networkSender(this.config.targetUrl, record);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error(`Webhook dispatch timed out after ${this.config.timeoutMs}ms`)), this.config.timeoutMs);
+        });
+        await Promise.race([sendPromise, timeoutPromise]);
         delivered = true;
         const entry: WebhookLogEntry = {
           id: record.id,

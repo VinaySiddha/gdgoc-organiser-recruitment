@@ -76,7 +76,7 @@ Detailed record of candidate prompts, AI suggestions, and manual validations acr
 - **AI Output Evaluation:**
   The AI suggested using SQLite unique index constraints on `ticket_id` inside explicit `BEGIN TRANSACTION ... COMMIT` blocks and trapping `sqlite3.IntegrityError`.
 - **Your Adjustments / Verification:**
-  Implemented atomic transactions in `database.py` and `db.ts` with thread locking. Verified with a multithreaded test (`test_concurrent_duplicate_check_in`) spawning 10 parallel threads on the exact same ticket, confirming exactly 1 valid check-in and 9 duplicate rejections.
+  Implemented atomic transactions in `database.py` using thread-safe SQLite locks (`BEGIN TRANSACTION ... COMMIT`), and implemented duplicate validation with in-memory Maps in `db.ts`. Verified with a multithreaded test (`test_concurrent_duplicate_check_in`) spawning 10 parallel threads on the exact same ticket, confirming exactly 1 valid check-in and 9 duplicate rejections.
 
 ---
 

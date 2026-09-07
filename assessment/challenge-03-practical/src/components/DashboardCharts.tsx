@@ -131,7 +131,21 @@ export const DashboardCharts: React.FC<DashboardProps> = ({ initialMetrics, atte
             <Users className="w-4 h-4 text-blue-400" />
             Attendee Roster & Live Status
           </h3>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <select
+              value={filterDept}
+              onChange={(e) => setFilterDept(e.target.value)}
+              className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="ALL">All Departments</option>
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ADS">ADS</option>
+              <option value="ECE">ECE</option>
+              <option value="EEE">EEE</option>
+              <option value="MECH">MECH</option>
+              <option value="CIVIL">CIVIL</option>
+            </select>
             <div className="relative flex-1 sm:w-64">
               <input
                 type="text"

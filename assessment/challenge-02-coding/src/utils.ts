@@ -17,9 +17,12 @@ export function timeToMinutes(timeStr: string): number {
  * Converts minutes from midnight back to "HH:MM" 24-hour string.
  */
 export function minutesToTime(minutes: number): string {
-  if (minutes < 0 || minutes >= 1440) return '00:00';
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
+  if (typeof minutes !== 'number' || isNaN(minutes) || !isFinite(minutes) || minutes < 0 || minutes >= 1440) {
+    return '00:00';
+  }
+  const totalMinutes = Math.floor(minutes);
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 }
 

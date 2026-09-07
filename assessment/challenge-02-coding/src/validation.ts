@@ -24,8 +24,11 @@ export function validateSchedulerInputs(
   // 1. Initial scan for duplicate and valid session IDs
   if (Array.isArray(sessions)) {
     for (const s of sessions) {
-      if (s && typeof s.id === 'string' && s.id.trim() !== '') {
-        allSessionIdSet.add(s.id.trim());
+      if (s && typeof s === 'object' && s.id !== undefined && s.id !== null) {
+        const strId = String(s.id).trim();
+        if (strId) {
+          allSessionIdSet.add(strId);
+        }
       }
     }
   }
@@ -34,10 +37,15 @@ export function validateSchedulerInputs(
   if (Array.isArray(sessions)) {
     for (const s of sessions) {
       if (!s || typeof s !== 'object') {
+        invalidSessionErrors.push({
+          sessionId: 'UNKNOWN_SESSION',
+          reason: 'INVALID_DATA',
+          details: 'Session entry is not an object',
+        });
         continue;
       }
 
-      const sId = (s.id || '').trim();
+      const sId = (s.id !== undefined && s.id !== null ? String(s.id) : '').trim();
       if (!sId) {
         invalidSessionErrors.push({
           sessionId: 'UNKNOWN_SESSION',
@@ -57,7 +65,7 @@ export function validateSchedulerInputs(
       }
       seenSessionIds.add(sId);
 
-      if (!s.title || typeof s.title !== 'string' || s.title.trim() === '') {
+      if (s.title === undefined || s.title === null || typeof s.title !== 'string' || s.title.trim() === '') {
         invalidSessionErrors.push({
           sessionId: sId,
           reason: 'INVALID_DATA',
@@ -66,7 +74,7 @@ export function validateSchedulerInputs(
         continue;
       }
 
-      if (!s.speakerId || typeof s.speakerId !== 'string' || s.speakerId.trim() === '') {
+      if (s.speakerId === undefined || s.speakerId === null || typeof s.speakerId !== 'string' || s.speakerId.trim() === '') {
         invalidSessionErrors.push({
           sessionId: sId,
           reason: 'INVALID_DATA',
@@ -78,8 +86,10 @@ export function validateSchedulerInputs(
       if (
         typeof s.durationMinutes !== 'number' ||
         isNaN(s.durationMinutes) ||
+        !isFinite(s.durationMinutes) ||
         s.durationMinutes <= 0 ||
-        s.durationMinutes > 1440
+        s.durationMinutes > 1440 ||
+        !Number.isInteger(s.durationMinutes)
       ) {
         invalidSessionErrors.push({
           sessionId: sId,
@@ -92,7 +102,9 @@ export function validateSchedulerInputs(
       if (
         typeof s.expectedAttendees !== 'number' ||
         isNaN(s.expectedAttendees) ||
-        s.expectedAttendees < 0
+        !isFinite(s.expectedAttendees) ||
+        s.expectedAttendees < 0 ||
+        !Number.isInteger(s.expectedAttendees)
       ) {
         invalidSessionErrors.push({
           sessionId: sId,
@@ -105,8 +117,10 @@ export function validateSchedulerInputs(
       if (
         typeof s.popularityScore !== 'number' ||
         isNaN(s.popularityScore) ||
+        !isFinite(s.popularityScore) ||
         s.popularityScore < 1 ||
-        s.popularityScore > 100
+        s.popularityScore > 100 ||
+        !Number.isInteger(s.popularityScore)
       ) {
         invalidSessionErrors.push({
           sessionId: sId,
@@ -117,7 +131,7 @@ export function validateSchedulerInputs(
       }
 
       // Check self-dependency
-      const prereqs = Array.isArray(s.prerequisites) ? s.prerequisites : [];
+      const prereqs = Array.isArray(s.prerequisites) ? s.prerequisites.map((p) => String(p).trim()) : [];
       if (prereqs.includes(sId)) {
         invalidSessionErrors.push({
           sessionId: sId,
@@ -160,7 +174,7 @@ export function validateSchedulerInputs(
   if (Array.isArray(rooms)) {
     for (const r of rooms) {
       if (!r || typeof r !== 'object') continue;
-      const rId = (r.id || '').trim();
+      const rId = (r.id !== undefined && r.id !== null ? String(r.id) : '').trim();
       if (!rId) continue;
 
       if (seenRoomIds.has(rId)) {
@@ -169,7 +183,7 @@ export function validateSchedulerInputs(
       }
       seenRoomIds.add(rId);
 
-      if (typeof r.capacity !== 'number' || isNaN(r.capacity) || r.capacity <= 0) {
+      if (typeof r.capacity !== 'number' || isNaN(r.capacity) || !isFinite(r.capacity) || r.capacity <= 0) {
         continue;
       }
 
@@ -177,10 +191,10 @@ export function validateSchedulerInputs(
       if (Array.isArray(r.availableWindows)) {
         for (const w of r.availableWindows) {
           if (!w || !w.start || !w.end) continue;
-          const startMin = timeToMinutes(w.start);
-          const endMin = timeToMinutes(w.end);
+          const startMin = timeToMinutes(String(w.start));
+          const endMin = timeToMinutes(String(w.end));
           if (startMin >= 0 && endMin >= 0 && startMin < endMin) {
-            validWindows.push({ start: w.start, end: w.end });
+            validWindows.push({ start: String(w.start), end: String(w.end) });
           }
         }
       }
@@ -189,8 +203,8 @@ export function validateSchedulerInputs(
         validRooms.push({
           ...r,
           id: rId,
-          name: (r.name || rId).trim(),
-          capacity: r.capacity,
+          name: String(r.name !== undefined && r.name !== null ? r.name : rId).trim(),
+          capacity: Math.floor(r.capacity),
           availableWindows: validWindows,
         });
       }

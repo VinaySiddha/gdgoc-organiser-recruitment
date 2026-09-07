@@ -22,6 +22,13 @@ export class EventHubRepository {
       };
     }
 
+    if (this.tickets.has(ticket.id)) {
+      return {
+        success: false,
+        error: 'Ticket ID collision detected: A ticket with this ID already exists',
+      };
+    }
+
     this.attendees.set(attendee.id, { ...attendee, email: cleanEmail, rollNumber: cleanRoll });
     this.tickets.set(ticket.id, ticket);
     this.emailToAttendeeId.set(cleanEmail, attendee.id);
@@ -38,6 +45,7 @@ export class EventHubRepository {
   }
 
   public getTicketByRollOrEmail(identifier: string): (TicketRecord & { attendee?: AttendeeRecord }) | undefined {
+    if (!identifier) return undefined;
     const cleanId = identifier.trim().toLowerCase();
     const attendeeId = this.emailToAttendeeId.get(cleanId) || this.rollToAttendeeId.get(identifier.trim().toUpperCase());
     if (!attendeeId) return undefined;
@@ -51,7 +59,7 @@ export class EventHubRepository {
   }
 
   public performCheckIn(
-    ticketId: string,
+    identifier: string,
     scannedBy: string = 'ORGANIZER_DESK',
     deviceInfo?: string
   ): {
@@ -60,11 +68,12 @@ export class EventHubRepository {
     attendee?: AttendeeRecord;
     scannedAt?: string;
   } {
-    const ticket = this.tickets.get(ticketId);
+    const ticket = this.tickets.get(identifier) || this.getTicketByRollOrEmail(identifier);
     if (!ticket) {
       return { status: 'INVALID_TICKET' };
     }
 
+    const ticketId = ticket.id;
     if (ticket.status === 'CHECKED_IN' || this.checkIns.has(ticketId)) {
       const attendee = this.attendees.get(ticket.attendeeId);
       return { status: 'ALREADY_CHECKED_IN', ticket, attendee };

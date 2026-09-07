@@ -7,6 +7,10 @@
     "build": "tsc",
     "test": "jest"
   },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
   "keywords": ["debugging", "concurrency", "retry", "backoff", "iso8601", "event-dispatcher"],
   "author": "23A81A4397",
   "license": "MIT",

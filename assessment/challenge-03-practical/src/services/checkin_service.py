@@ -8,11 +8,11 @@ class CheckInService:
     def __init__(self, db: EventHubDatabase):
         self.db = db
 
-    def extract_ticket_id(self, raw_input: str) -> str:
+    def extract_ticket_id(self, raw_input: Any) -> str:
         """Parses ticket ID from raw string or QR pass URI format 'GDG-PASS:TICK-GDG-XXXX'."""
-        if not raw_input:
+        if raw_input is None:
             return ""
-        clean = raw_input.strip()
+        clean = str(raw_input).strip()
         if clean.startswith("GDG-PASS:"):
             return clean.replace("GDG-PASS:", "").strip()
         return clean

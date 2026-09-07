@@ -49,11 +49,11 @@ class RegistrationService:
 
         success, err = self.db.register_attendee(
             attendee_id=attendee_id,
-            full_name=data["fullName"].strip(),
-            email=data["email"].strip().lower(),
-            roll_number=data["rollNumber"].strip().upper(),
-            department=data["department"].strip(),
-            year=data["year"].strip(),
+            full_name=str(data.get("fullName", "")).strip(),
+            email=str(data.get("email", "")).strip().lower(),
+            roll_number=str(data.get("rollNumber", "")).strip().upper(),
+            department=str(data.get("department", "")).strip(),
+            year=str(data.get("year", "")).strip(),
             phone=str(data.get("phone", "")).strip() or None,
             ticket_id=ticket_id,
             qr_payload=qr_payload
@@ -68,10 +68,10 @@ class RegistrationService:
             "ticketId": ticket_id,
             "qrPayload": qr_payload,
             "attendee": {
-                "fullName": data["fullName"].strip(),
-                "email": data["email"].strip().lower(),
-                "rollNumber": data["rollNumber"].strip().upper(),
-                "department": data["department"].strip(),
-                "year": data["year"].strip()
+                "fullName": str(data.get("fullName", "")).strip(),
+                "email": str(data.get("email", "")).strip().lower(),
+                "rollNumber": str(data.get("rollNumber", "")).strip().upper(),
+                "department": str(data.get("department", "")).strip(),
+                "year": str(data.get("year", "")).strip()
             }
         }

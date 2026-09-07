@@ -2,6 +2,7 @@
 # Eliminates shared mutable instance state, parses ISO-8601 timestamps, implements exponential backoff
 
 import asyncio
+import inspect
 import re
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Callable, Any
@@ -19,7 +20,7 @@ class EventDispatcher:
     ):
         self.target_url = target_url
         self.max_retries = max(1, max_retries)
-        self.timeout_sec = timeout_sec
+        self.timeout_sec = max(0.01, timeout_sec) if timeout_sec is not None else 5.0
         self.initial_backoff_sec = initial_backoff_sec
         self.backoff_factor = backoff_factor
         
@@ -52,13 +53,13 @@ class EventDispatcher:
             return {"valid": False, "error": "Missing registration payload"}
         
         for field in ["id", "name", "email", "eventId", "registeredAt"]:
-            if field not in payload or not str(payload[field]).strip():
+            if field not in payload or payload[field] is None or not str(payload[field]).strip():
                 return {"valid": False, "error": f"Missing or empty field: {field}"}
         
         if "@" not in str(payload["email"]):
             return {"valid": False, "error": "Invalid email address"}
         
-        if not self.is_valid_iso8601(payload["registeredAt"]):
+        if not self.is_valid_iso8601(str(payload["registeredAt"])):
             return {"valid": False, "error": f"Invalid ISO-8601 timestamp: {payload['registeredAt']}"}
         
         return {"valid": True}
@@ -89,8 +90,23 @@ class EventDispatcher:
 
         return {"success": True, "registration_id": local_record["id"]}
 
+    async def _invoke_sender(self, url: str, record: Dict[str, Any]) -> None:
+        """Invokes custom network sender safely whether it is synchronous or asynchronous, with timeout."""
+        res = self._network_sender(url, record)
+        if inspect.isawaitable(res) or asyncio.iscoroutine(res):
+            if self.timeout_sec and self.timeout_sec > 0:
+                await asyncio.wait_for(res, timeout=self.timeout_sec)
+            else:
+                await res
+
+    async def _invoke_sleep(self, delay: float) -> None:
+        """Invokes sleep function safely whether synchronous or asynchronous."""
+        res = self._sleep_fn(delay)
+        if inspect.isawaitable(res) or asyncio.iscoroutine(res):
+            await res
+
     async def dispatch_webhook(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """Dispatches webhook with exponential backoff retry logic."""
+        """Dispatches webhook with exponential backoff retry logic and timeout protection."""
         reg_id = record["id"]
         attempts = 0
         delivered = False
@@ -99,7 +115,7 @@ class EventDispatcher:
         while attempts < self.max_retries and not delivered:
             attempts += 1
             try:
-                await self._network_sender(self.target_url, record)
+                await self._invoke_sender(self.target_url, record)
                 delivered = True
                 entry = {
                     "id": reg_id,
@@ -113,7 +129,7 @@ class EventDispatcher:
                 last_error = str(e) or "Network error"
                 if attempts < self.max_retries:
                     delay = self.initial_backoff_sec * (self.backoff_factor ** (attempts - 1))
-                    await self._sleep_fn(delay)
+                    await self._invoke_sleep(delay)
 
         failed_entry = {
             "id": reg_id,
@@ -126,8 +142,7 @@ class EventDispatcher:
         return failed_entry
 
     async def _default_mock_network_send(self, url: str, data: Dict[str, Any]) -> None:
-        await self._sleep_fn(0.01)
-        # default simulated send
+        await self._invoke_sleep(0.01)
 
     def get_store(self) -> Dict[str, Dict[str, Any]]:
         return dict(self.registration_store)

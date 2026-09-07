@@ -1,0 +1,121 @@
+name: Validate Assessment Submission
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  validate-structure-and-security:
+    name: Repository Structure & Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Core Assessment Directories
+        run: |
+          echo "🔍 Checking assessment directory structure..."
+          MISSING=0
+          
+          DIRS=(
+            "assessment"
+            "assessment/challenge-01-debugging"
+            "assessment/challenge-02-coding"
+            "assessment/challenge-03-practical"
+            "evaluation"
+            "docs"
+            "starter"
+          )
+          
+          for dir in "${DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "❌ Missing required directory: $dir"
+              MISSING=1
+            else
+              echo "✅ Found directory: $dir"
+            fi
+          done
+
+          if [ $MISSING -ne 0 ]; then
+            echo "Error: Critical assessment directories are missing."
+            exit 1
+          fi
+
+      - name: Security & Secret Leak Detection
+        run: |
+          echo "🔒 Scanning for leaked secrets, credentials, and .env files..."
+          LEAK_FOUND=0
+
+          # Check for tracked .env files
+          ENV_FILES=$(find . -maxdepth 3 -name ".env*" ! -name "*.example" ! -path "*/.*/*" -type f)
+          if [ -n "$ENV_FILES" ]; then
+            echo "❌ Security Alert: Found unignored .env file(s):"
+            echo "$ENV_FILES"
+            echo "Please remove these files from git history and use .env.example instead."
+            LEAK_FOUND=1
+          else
+            echo "✅ No active .env files committed."
+          fi
+
+          # Check for private keys or credential files
+          CRED_FILES=$(find . -maxdepth 3 \( -name "*.pem" -o -name "*.key" -o -name "serviceAccountKey.json" -o -name "credentials.json" \) ! -path "*/.*/*" -type f)
+          if [ -n "$CRED_FILES" ]; then
+            echo "❌ Security Alert: Found sensitive credential files:"
+            echo "$CRED_FILES"
+            LEAK_FOUND=1
+          else
+            echo "✅ No sensitive credential key files found."
+          fi
+
+          if [ $LEAK_FOUND -ne 0 ]; then
+            echo "Security check failed. Please remove leaked credentials before submitting."
+            exit 1
+          fi
+
+      - name: Check Submission & Disclosure Status
+        run: |
+          echo "📄 Checking candidate submission documentation..."
+          
+          SUBMISSION_FILE=""
+          if [ -f "SUBMISSION.md" ]; then
+            SUBMISSION_FILE="SUBMISSION.md"
+          elif [ -f "starter/SUBMISSION.md" ]; then
+            SUBMISSION_FILE="starter/SUBMISSION.md"
+          fi
+
+          DISCLOSURE_FILE=""
+          if [ -f "AI_DISCLOSURE.md" ]; then
+            DISCLOSURE_FILE="AI_DISCLOSURE.md"
+          elif [ -f "starter/AI_DISCLOSURE.md" ]; then
+            DISCLOSURE_FILE="starter/AI_DISCLOSURE.md"
+          fi
+
+          echo "Submission document found: ${SUBMISSION_FILE:-None}"
+          echo "AI Disclosure document found: ${DISCLOSURE_FILE:-None}"
+
+          # Write summary to GitHub Step Summary
+          echo "### 📋 Submission Readiness Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Location |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :---: | :--- |" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -n "$SUBMISSION_FILE" ]; then
+            echo "| \`SUBMISSION.md\` Present | ✅ | \`$SUBMISSION_FILE\` |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| \`SUBMISSION.md\` Present | ⚠️ (Missing) | Expected at root or \`starter/\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -n "$DISCLOSURE_FILE" ]; then
+            echo "| \`AI_DISCLOSURE.md\` Present | ✅ | \`$DISCLOSURE_FILE\` |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| \`AI_DISCLOSURE.md\` Present | ⚠️ (Missing) | Expected at root or \`starter/\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "| Secret Scan | ✅ Clean | No private keys or raw \`.env\` detected |" >> $GITHUB_STEP_SUMMARY
+          echo "| Directory Layout | ✅ Valid | Core assessment folders verified |" >> $GITHUB_STEP_SUMMARY

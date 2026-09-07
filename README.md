@@ -82,31 +82,36 @@ Follow these steps to complete and submit your assessment:
 
 ```mermaid
 flowchart LR
-    A[1. Fork / Clone Repo] --> B[2. Read Guides & Rubric]
-    B --> C[3. Create Candidate Branch]
-    C --> D[4. Solve Challenges 01, 02, 03]
-    D --> E[5. Fill SUBMISSION.md & AI_DISCLOSURE.md]
-    E --> F[6. Pass GitHub Actions Checks]
-    F --> G[7. Submit PR / Push Repo]
+    A[1. Clone / Setup Repo] --> B[2. Create Candidate Branch]
+    B --> C[3. Solve Challenges 01, 02, 03]
+    C --> D[4. Fill SUBMISSION & AI Log]
+    D --> E[5. Push Candidate Branch]
+    E --> F[6. Autograder Scores Automatically]
 ```
 
-1. **Access & Setup:** Fork or clone this repository to your personal GitHub account. Set up your local development environment.
+1. **Access & Setup:** Clone or instantiate your assessment repository. Set up your local development environment.
 2. **Review Guides:** Thoroughly read:
    - [Candidate Guide](docs/CANDIDATE_GUIDE.md)
    - [Evaluation Rubric](evaluation/RUBRIC.md)
    - [AI Usage Policy](docs/AI_USAGE_POLICY.md)
-3. **Branching:** Create a feature branch named `submission/<your-github-username>` (e.g., `submission/octocat`).
+3. **Create Your Candidate Branch:** Create and switch to a dedicated branch named after your roll number or GitHub username:
+   ```bash
+   git checkout -b submission/<your-roll-no-or-username>
+   # Example: git checkout -b submission/22ec101
+   ```
 4. **Implement Solutions:**
    - Complete **Challenge 01** in `assessment/challenge-01-debugging/`.
    - Complete **Challenge 02** in `assessment/challenge-02-coding/`.
    - Complete **Challenge 03** in `assessment/challenge-03-practical/`.
 5. **Fill Documentation:**
-   - Copy and complete [`starter/SUBMISSION.md`](starter/SUBMISSION.md) to your submission root or designated location.
-   - Copy and complete [`starter/AI_DISCLOSURE.md`](starter/AI_DISCLOSURE.md) documenting any tools used.
-6. **Verify Automated Workflows:**
-   - Ensure repository structure and automated checks pass in GitHub Actions (`.github/workflows/`).
-7. **Submit:**
-   - Push your branch to your repository or open a Pull Request as instructed in the [Candidate Guide](docs/CANDIDATE_GUIDE.md).
+   - Complete [`starter/SUBMISSION.md`](starter/SUBMISSION.md).
+   - Complete [`starter/AI_DISCLOSURE.md`](starter/AI_DISCLOSURE.md) documenting any tools used.
+6. **Push Your Branch (No Pull Request / Merge Needed):**
+   - Push your branch directly:
+     ```bash
+     git push -u origin submission/<your-roll-no-or-username>
+     ```
+   - **The automated autograder will immediately score your branch upon push** and display your scorecard in the GitHub Actions summary!
 
 ---
 

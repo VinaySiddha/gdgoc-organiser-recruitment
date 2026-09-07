@@ -29,14 +29,14 @@ As a future leader and representative of Google Developer Groups on Campus (GDG 
 
 ## 🛠️ Candidate Git Workflow
 
-1. **Fork or Clone:**
+1. **Clone Your Repository:**
    ```bash
    git clone <repository-url>
    cd gdgoc-organiser-recruitment
    ```
-2. **Create a Dedicated Branch:**
+2. **Create Your Dedicated Branch:**
    ```bash
-   git checkout -b submission/<your-github-username>
+   git checkout -b submission/<your-roll-no-or-username>
    ```
 3. **Commit Regularly with Meaningful Messages:**
    - Commit logically separated changes:
@@ -44,11 +44,15 @@ As a future leader and representative of Google Developer Groups on Campus (GDG 
      - `test(challenge-01): add unit tests for concurrent requests`
      - `feat(challenge-02): implement priority session allocation algorithm`
      - `docs(submission): update SUBMISSION.md with architecture details`
-4. **Run Pre-submission Checks:**
-   - Ensure linting and tests pass locally.
-   - Verify that `.env` files are not tracked by Git.
-5. **Submit:**
-   - Push your branch to your forked repository and submit via your assigned submission channel.
+4. **Test Locally:**
+   - Run the local autograder: `python3 evaluation/autograder/evaluator.py`
+   - Verify that `.env` files with private secrets are not tracked by Git.
+5. **Push Your Branch (No Pull Request / Merge Needed):**
+   - Push your branch directly:
+     ```bash
+     git push -u origin submission/<your-roll-no-or-username>
+     ```
+   - Automated GitHub Actions workflows will evaluate your branch instantly upon push.
 
 ---
 

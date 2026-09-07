@@ -32,34 +32,36 @@ This assessment is designed to see how you:
 sequenceDiagram
     autonumber
     actor Candidate
-    participant GitHub as Your GitHub Account
-    participant CI as GitHub Actions
-    participant Reviewers as GDG Evaluation Panel
+    participant Git as Local Git Repo
+    participant GitHub as Your Private Repo
+    participant Autograder as GitHub Actions Autograder
 
-    Candidate->>GitHub: Fork / Clone Assessment Repo
-    Candidate->>GitHub: Create branch `submission/<your-username>`
-    Candidate->>Candidate: Implement Challenges 01, 02, 03
-    Candidate->>Candidate: Complete `SUBMISSION.md` & `AI_DISCLOSURE.md`
-    Candidate->>GitHub: Commit & Push atomic changes
-    GitHub->>CI: Trigger Automated Validation & Tests
-    Candidate->>Reviewers: Submit final PR / Repo URL
-    Reviewers->>Candidate: Technical Interview & Discussion
+    Candidate->>Git: Clone repository / template
+    Candidate->>Git: git checkout -b submission/<roll-no-or-username>
+    Candidate->>Git: Implement Challenges 01, 02, 03
+    Candidate->>Git: Complete SUBMISSION.md & AI_DISCLOSURE.md
+    Candidate->>Git: git commit -m "feat: complete assessment"
+    Candidate->>GitHub: git push origin submission/<roll-no-or-username>
+    GitHub->>Autograder: Automatically triggers 100-pt Autograder
+    Autograder-->>Candidate: View score & breakdown in Actions Tab!
 ```
 
-### Step 1: Clone or Fork the Repository
-1. Fork this repository to your personal GitHub account, or clone it locally:
-   ```bash
-   git clone https://github.com/gdgoc-svec/gdgoc-organiser-recruitment.git
-   cd gdgoc-organiser-recruitment
-   ```
-2. Check that your local environment has the runtimes you need (Node.js, Python, Go, Java, Docker, etc.).
-
-### Step 2: Create Your Working Branch
-Create and switch to a dedicated submission branch named after your GitHub username:
+### Step 1: Clone Your Repository
+Clone your assigned or instantiated repository locally:
 ```bash
-git checkout -b submission/<your-github-username>
+git clone <your-repository-url>
+cd gdgoc-organiser-recruitment
 ```
-*Example:* `git checkout -b submission/alex-chen`
+Verify that your local environment has the runtimes you need (Node.js, Python, Go, Java, Docker, etc.).
+
+### Step 2: Create Your Dedicated Candidate Branch
+Create and switch to a dedicated submission branch named after your **college roll number or GitHub username**:
+```bash
+git checkout -b submission/<your-roll-no-or-username>
+```
+*Examples:*
+- `git checkout -b submission/22ec101`
+- `git checkout -b submission/alex-chen`
 
 ### Step 3: Implement the Challenges
 Navigate to each challenge directory and complete the tasks:
@@ -79,17 +81,23 @@ Navigate to each challenge directory and complete the tasks:
 1. Fill in [`starter/SUBMISSION.md`](../starter/SUBMISSION.md) with your details, tech stack, architectural choices, and self-reflection.
 2. Fill in [`starter/AI_DISCLOSURE.md`](../starter/AI_DISCLOSURE.md) documenting all AI tools, prompts, and verification steps used.
 
-### Step 5: Verify Automated Checks
-Run your tests locally and push to your GitHub branch:
+### Step 5: Test Locally & Push Your Branch
+You can test your score locally anytime before pushing:
 ```bash
-git push -u origin submission/<your-github-username>
+python3 evaluation/autograder/evaluator.py
 ```
-Navigate to the **Actions** tab on your GitHub repository to ensure that both workflows pass:
-- `Validate Assessment Submission` (verifies structure and checks for leaked secrets)
-- `Code Quality & Automated Tests` (runs linting and tests)
 
-### Step 6: Submit Your Work
-Follow the submission instructions provided in the assessment announcement email/form (submitting your repository link or opening a pull request).
+When you are ready, commit and push your branch directly:
+```bash
+git add .
+git commit -m "feat(submission): complete GDG 4.0 technical assessment"
+git push -u origin submission/<your-roll-no-or-username>
+```
+
+### Step 6: Instant Automated Grading
+> [!NOTE]
+> **No Pull Request or merge to `main` is required!**  
+> As soon as you push your branch, GitHub Actions automatically runs the **100-Point Autograder Pipeline**. Navigate to the **Actions** tab on your GitHub repository to view your instant scorecard and detailed feedback report.
 
 ---
 

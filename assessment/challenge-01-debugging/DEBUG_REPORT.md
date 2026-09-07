@@ -15,9 +15,9 @@
 
 ---
 
-## 🕵️ Diagnostic Process & Root Cause
+## 🕵️ Diagnostic Process
 
-### Reproduction Steps:
+### Reproduction:
 The race condition was reproduced locally by firing 50 concurrent requests simultaneously with distinct IDs, names, and event IDs:
 ```bash
 # Run the automated regression test harness
@@ -29,7 +29,7 @@ Under concurrency in the flawed reference implementation:
 - The shared property `this.activeContext` was overwritten by subsequent concurrent requests before earlier asynchronous validation operations (`setTimeout` / `asyncio.sleep`) completed.
 - When `this.registrationStore.set()` executed, it used the mutated `this.activeContext`, storing the newest attendee's data under multiple different registration IDs.
 
-### Root Cause Analysis:
+### Root Cause:
 A comprehensive audit identified four intertwined root causes:
 
 1. **Shared Mutable Request State Across Asynchronous Contexts:**
@@ -52,9 +52,7 @@ A comprehensive audit identified four intertwined root causes:
 
 ---
 
-## 🛠️ Implemented Fix & Code Changes:
-
-### Fix Summary:
+## 🛠️ Code Changes:
 1. **Eliminated Shared Mutable State:** Removed `activeContext` entirely. Every registration is cloned into an immutable request-local object passed explicitly through functions.
 2. **Robust ISO-8601 Timestamp Validation:** Added strict regex and offset parsing for ISO-8601 timestamps supporting `Z`, positive (`+05:30`), and negative (`-04:00`) offsets.
 3. **Structured Exponential Backoff:** Implemented delay calculation:
@@ -113,9 +111,7 @@ assessment/challenge-01-debugging/tests/test_dispatcher.py::test_webhook_retry_e
 
 ---
 
-## 🛡️ Long-term Prevention & Architectural Recommendations:
-
-### Prevention Strategy:
+## 🛡️ Recommendations:
 1. **Adopt Immutable Data Patterns:** Enforce readonly TypeScript interfaces (`Readonly<T>`) and lint rules banning instance mutation inside asynchronous request handlers.
 2. **Outbox Pattern for Reliable Messaging:** Decouple transaction persistence from external webhook delivery using an Outbox queue table backed by Redis or PostgreSQL, ensuring at-least-once delivery with background worker processing.
 3. **Strict ISO-8601 Schema Validation:** Enforce request schema validation at the API boundary using Zod or Pydantic before handlers execute.

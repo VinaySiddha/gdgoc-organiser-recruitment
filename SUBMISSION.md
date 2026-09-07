@@ -29,8 +29,8 @@
 
 ## 🛠️ Challenge 01 — Debugging & Root-Cause Analysis Summary
 
-- **Root Cause Identified:** Shared mutable instance state causing race conditions, unhandled fire-and-forget promise rejections, naive timezone offset discarding, and missing exponential backoff.
-- **Fix Implemented:** Request-local immutable scopes, ISO-8601 offset support (+05:30 IST / -04:00), exponential backoff retry loop, and decoupled failure isolation.
+- **Root Cause:** Shared mutable instance state causing race conditions, unhandled fire-and-forget promise rejections, naive timezone offset discarding, and missing exponential backoff.
+- **Code Changes:** Request-local immutable scopes, ISO-8601 offset support (+05:30 IST / -04:00), exponential backoff retry loop, and decoupled failure isolation.
 - **Regression Testing Strategy:** 6 automated test suites covering 50 simultaneous registrations, timezone offsets, retry delay progression, and permanent failure logging.
 - *(Full details in `assessment/challenge-01-debugging/DEBUG_REPORT.md`)*
 
@@ -87,8 +87,8 @@ npm run dev
 
 ## 🤖 AI Assistance & Modern Tooling Disclosure
 
-- **AI Tools Used:** Google Gemini 2.0 / Gemini 3.7 & GitHub Copilot
-- **How AI Was Used:** Architectural scaffolding, test-case synthesis, canvas coordinate calculations, and edge-case boundary brainstorming.
+- **AI Tools:** Google Gemini 2.0 / Gemini 3.7 & GitHub Copilot
+- **Activity:** Architectural scaffolding, test-case synthesis, canvas coordinate calculations, and edge-case boundary brainstorming.
 - **Validation & Refactoring:** Every generated algorithm and database query was validated with dedicated unit tests, manual edge-case verification, concurrency simulation, and strict adherence to the assessment rubric.
 - *(Refer to `AI_DISCLOSURE.md` for full detailed prompts and workflow logs).*
 
@@ -105,7 +105,7 @@ npm run dev
 - Browser-based camera permissions require HTTPS in production or localhost during development.
 - In-memory / file SQLite is optimal for single-node event desks (<5,000 attendees); distributed multi-server deployments would transition to PostgreSQL.
 
-### What I Would Improve with More Time:
+### What I Would Improve:
 - Redis Outbox Webhook Queue for asynchronous background messaging with dead-letter queue (DLQ) handling.
 - Dynamic Live WebSockets Telemetry to push real-time check-in updates to the organizer dashboard without client polling.
 - Automated WhatsApp & Email Pass Delivery to dispatch QR passes and calendar invites to students upon registration.

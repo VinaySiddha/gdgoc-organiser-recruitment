@@ -6,8 +6,8 @@
 
 ## 🧑‍💻 Candidate Details
 
-- **Candidate Name:** Candidate 23A81A4397
-- **GitHub Username:** 23A81A4397
+- **Candidate Name:** Ibba Devendra sagar
+- **GitHub Username:** Devendra1306
 - **Date:** September 7, 2026
 
 ---

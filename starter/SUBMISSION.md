@@ -6,11 +6,11 @@
 
 ## 👤 Candidate Information
 
-- **Candidate Name:** Candidate 23A81A4397
-- **GitHub Username:** 23A81A4397
-- **Year:** 2nd Year
+- **Candidate Name:** Ibba Devendra sagar
+- **GitHub Username:** Devendra1306
+- **Year:** 4th Year
 - **Department:** CSE (Computer Science & Engineering)
-- **College Email / Contact:** 23A81A4397@svec.edu.in
+- **College Email / Contact:** devendrasagar0988@gmail.com
 
 ---
 
@@ -21,7 +21,7 @@
   - [x] Challenge 02 — Coding & Problem Solving (Deterministic Conference Track Scheduler)
   - [x] Challenge 03 — Practical GDG Community Solution (GDG SVEC EventHub - Track A)
 - **Tech Stack:** TypeScript, Python 3.12, Next.js 14, React 18, Tailwind CSS, SQLite, Prisma, Pytest, Jest, HTML5 Canvas API
-- **Repository URL:** https://github.com/VinaySiddha/gdgoc-organiser-recruitment
+- **Repository URL:** https://github.com/Devendra1306/gdgoc-organiser-recruitment
 - **Submission Branch:** `submission/23A81A4397`
 - **Live Demo URL (if applicable):** Local execution via Next.js dev server on `http://localhost:3000`
 
@@ -63,7 +63,7 @@ Next.js App Router full-stack architecture with React, Tailwind CSS, HTML5 Canva
 ### Setup & Local Execution Guide
 ```bash
 # 1. Clone repository
-git clone https://github.com/VinaySiddha/gdgoc-organiser-recruitment.git
+git clone https://github.com/Devendra1306/gdgoc-organiser-recruitment.git
 cd gdgoc-organiser-recruitment
 
 # 2. Checkout submission branch
@@ -118,5 +118,5 @@ npm run dev
 - [x] I have not committed any private keys, real credentials, or secrets in this repository.
 - [x] I am prepared to present, explain, and defend all architectural decisions and code during the technical interview.
 
-**Signature / Name:** Candidate 23A81A4397  
+**Signature / Name:** Ibba Devendra sagar  
 **Date:** September 7, 2026

@@ -1,0 +1,17 @@
+{
+  "name": "challenge-01-debugging",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Challenge 01: EventDispatcher Debugging and Regression Tests",
+  "main": "src/dispatcher.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx --test tests/dispatcher.test.ts",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

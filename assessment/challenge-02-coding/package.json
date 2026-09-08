@@ -1,0 +1,17 @@
+{
+  "name": "challenge-02-coding",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Challenge 02: GDG DevFest Smart Session & Track Scheduler",
+  "main": "src/scheduler.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsx --test tests/scheduler.test.ts",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

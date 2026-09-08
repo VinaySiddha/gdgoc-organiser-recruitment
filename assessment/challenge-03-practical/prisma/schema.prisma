@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  MENTOR
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  projects  Project[]
+  reviews   Review[]
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  domain      String
+  year        String
+  techStack   String[]
+  githubUrl   String
+  demoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reviews     Review[]
+
+  @@index([domain])
+  @@index([year])
+}
+
+model Review {
+  id                String   @id @default(uuid())
+  codeQualityScore  Int
+  innovationScore   Int
+  completenessScore Int
+  comments          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relationships
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mentorId          String
+  mentor            User     @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  // Ensure a mentor can only review a project once
+  @@unique([projectId, mentorId])
+}

@@ -1,115 +1,194 @@
-# 🛠️ Challenge 03 — Practical GDG Community Engineering Project
-**Evaluation Weight:** 35 Points  
-**Recommended Time:** 8 – 10 Hours  
-**Deliverable:** Fully functional working project, clean codebase, architecture documentation, setup instructions, and optional live demo.
+# 🚀 Challenge 03 Track C — Student Project Showcase & Mentorship Portal
+
+## 📌 1. Project Overview
+The **Student Project Showcase & Mentorship Portal** is a full-stack platform built for the **GDG SVEC** student developer community. It allows students to submit engineering projects, showcase tech stacks and live demos, and enables mentors to evaluate projects across Code Quality, Innovation, and Completeness. The platform dynamically calculates composite review scores and maintains an official leaderboard ranking top projects.
 
 ---
 
-## 📌 Context: Building for the GDG on Campus Community
-
-As a GDG on Campus Organizer at SVEC, you will build tools, platforms, and services that directly impact hundreds of student developers, event attendees, hackathon participants, and workshop mentors.
-
-This challenge evaluates your ability to take a **real-world community problem from concept to working software**, demonstrating sound architectural choices, clean code, good UX/API design, and professional engineering ownership.
+## 🛠️ 2. Chosen Stack
+- **Framework**: Next.js 16 (App Router with Route Handlers & Server/Client Components)
+- **Language**: TypeScript (Strict Mode)
+- **Database & ORM**: PostgreSQL (Neon) with Prisma 7 ORM
+- **Styling**: Tailwind CSS v4
+- **Testing & Verification**: Native TypeScript checks (`npx tsc --noEmit`) and ESLint
 
 ---
 
-## 🎯 Choose Your Track
+## 📐 3. Architecture Overview
+The application follows a clean layered Architecture:
 
-You may select **ONE** of the following three community projects to build:
+```text
+Request (Client UI / HTTP)
+   │
+   ▼
+Next.js Route Handler (src/app/api/*)  <-- Thin Controller
+   │
+   ▼
+Validation Layer (src/validators/*)    <-- Schema & Input Validation
+   │
+   ▼
+Service Layer (src/services/*)          <-- Business Logic & Score Calculation
+   │
+   ▼
+Prisma Client (src/lib/prisma.ts)      <-- Database Access Layer
+   │
+   ▼
+PostgreSQL Database (Neon)
+```
 
-```mermaid
-graph TD
-    A[Challenge 03 Options] --> B[Track A: Event Check-In & Dynamic Badge Hub]
-    A --> C[Track B: Smart RSVP & Automated Waitlist Engine]
-    A --> D[Track C: Campus Project Showcase & Review Portal]
+- **Route Handlers** stay thin and only handle request parsing, calling services, and returning standardized API responses (`src/lib/api-response.ts`).
+- **Service Layer** encapsulates all business formulas, metrics aggregation, sorting, and Prisma queries.
+- **Client Components** power interactive UI states (filters, search, modals, identity switcher).
+
+---
+
+## 🗄️ 4. Database Model Overview
+
+```prisma
+enum Role {
+  STUDENT
+  MENTOR
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects  Project[]
+  reviews   Review[]
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  domain      String   // AI/ML, Web, Mobile, Cloud, IoT
+  year        String   // Academic Year
+  techStack   String[]
+  githubUrl   String
+  demoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reviews     Review[]
+
+  @@index([domain])
+  @@index([year])
+}
+
+model Review {
+  id                String   @id @default(uuid())
+  codeQualityScore  Int      // 1-10
+  innovationScore   Int      // 1-10
+  completenessScore Int      // 1-10
+  comments          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mentorId          String
+  mentor            User     @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, mentorId]) // Prevents duplicate reviews by the same mentor
+}
 ```
 
 ---
 
-### 🎟️ Track A: Event Check-In & Dynamic Social Badge Hub
-*Ideal for candidates passionate about Full-Stack development, UX, and interactive web tools.*
+## 🔌 5. API Endpoint List
 
-**Problem:** For large GDG workshops, manual check-in creates massive queues at the hall entrance, and attendees want digital badges to share on LinkedIn/Twitter/Instagram.
-
-**Core Requirements:**
-1. **Attendee Registration & QR Pass:** Generate a unique ticket/QR code upon student registration.
-2. **Organizer Check-in Scanner / API:** A rapid scanner interface or API endpoint that validates tickets, prevents duplicate check-ins, and marks attendance.
-3. **Dynamic Social Badge Generator:** Allow verified attendees to customize and generate a downloadable/shareable personalized GDG attendee badge (using Canvas, SVG, or server-side image generation).
-4. **Live Attendance Dashboard:** Display real-time attendance counts, check-in velocity, and department breakdowns.
-
----
-
-### ⚡ Track B: Smart Workshop RSVP & Automated Waitlist Engine
-*Ideal for candidates focusing on Backend, Distributed Systems, APIs, and Robust State Management.*
-
-**Problem:** High-demand GDG workshops (e.g. Cloud Study Jams, Flutter Bootcamps) fill up within minutes. When registered students fail to show up, waitlisted students miss out.
-
-**Core Requirements:**
-1. **Capacity-Gated RSVP API:** Enforce strict seat caps with atomic reservation handling.
-2. **Smart Waitlist & Timed Release:** When a registered user cancels, automatically promote the next waitlisted user and assign a time-limited claim window (e.g., 2 hours to confirm before expiring to the next person).
-3. **Admin Controls & Batch Operations:** Endpoints to bulk-import attendees, broadcast status updates, and export attendee manifests in CSV/JSON format.
-4. **Webhook Notification Dispatcher:** Trigger notifications (simulated or real Discord/Slack/Email webhooks) on registration, waitlist promotion, and cancellation.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/projects` | Submit a new student project |
+| `GET` | `/api/projects` | List projects with search, domain, year filters, and pagination |
+| `GET` | `/api/projects/[id]` | Fetch detailed project by ID |
+| `PUT` | `/api/projects/[id]` | Update project details |
+| `DELETE` | `/api/projects/[id]` | Delete project |
+| `POST` | `/api/projects/[id]/reviews` | Submit mentor review (1–10 scores + comments) |
+| `GET` | `/api/projects/[id]/reviews` | List all reviews & calculated summary metrics for a project |
+| `GET` | `/api/leaderboard` | Fetch ranked project standings sorted by overall score |
 
 ---
 
-### 💡 Track C: Student Project Showcase & Mentorship Review Portal
-*Ideal for candidates interested in Platform Development, Content Management, and Community Engagement.*
+## 💻 6. Local Setup
 
-**Problem:** After hackathons and study jams, student projects are often forgotten in disconnected GitHub repos. GDG needs a centralized showcase with structured feedback from core team mentors.
+### 1. Prerequisites
+- Node.js v20+
+- npm v10+
 
-**Core Requirements:**
-1. **Project Submission & GitHub Metadata:** Allow students to submit project details, tech stack tags, demo links, and GitHub repository URLs.
-2. **Interactive Showcase Feed:** Filter and search projects by domain (AI/ML, Web, Mobile, Cloud, IoT), year, and tech stack.
-3. **Structured Mentor Review System:** Organizers can evaluate submissions using a standardized rubric (Code Quality, Innovation, Completeness) with feedback comments.
-4. **Leaderboard / Featured Projects:** Compute overall score rankings and highlight top community projects on the homepage.
-
----
-
-## 🛠️ Technology Stack Freedom
-
-You are **100% free to choose your tech stack**. Use the technologies you are most productive in:
-
-- **Frontend:** React, Next.js, Vue, Nuxt, Svelte, Angular, Tailwind CSS, HTML5/Vanilla JS, Flutter Web.
-- **Backend:** Node.js (Express/Fastify/NestJS), Python (FastAPI/Django/Flask), Go, Java/Kotlin (Spring Boot/Ktor), Rust.
-- **Storage / Database:** SQLite, PostgreSQL, MongoDB, Redis, In-Memory Store, Firebase, Supabase, or JSON file persistence.
-- **Packaging:** Docker / Docker Compose (Optional, but highly appreciated).
-
----
-
-## 📦 Minimum Deliverables Checklist
-
-- [ ] **Working Application Code:** Fully implemented frontend and/or backend in `assessment/challenge-03-practical/`.
-- [ ] **Clear Setup Guide:** Exact step-by-step commands to install dependencies, run migrations, and start the app locally.
-- [ ] **Environment Template:** `.env.example` with documented configuration keys (no real secrets!).
-- [ ] **Architecture Overview:** A brief explanation (and optional diagram) in your project README explaining your data model, APIs, and component design.
-- [ ] **Meaningful Git History:** Demonstrating steady, incremental progress through atomic commits.
-- [ ] **Bonus / Optional:** Live deployed URL (Vercel, Netlify, Render, Railway, Fly.io, etc.).
-
----
-
-## 📂 Recommended Directory Structure
-
-```
-assessment/challenge-03-practical/
-├── README.md               # Project overview, setup guide & architecture notes
-├── .env.example            # Sample configuration
-├── package.json / requirements.txt / go.mod / Dockerfile
-├── src/                    # Application source code
-│   ├── frontend/           # (If applicable)
-│   ├── backend/            # (If applicable)
-│   └── ...
-└── tests/                  # Project unit / integration tests
+### 2. Install Dependencies
+```bash
+npm install
 ```
 
 ---
 
-## ⚖️ Scoring Criteria (35 Points)
+## 🔑 7. Environment Variables
+Create a local `.env` file in `assessment/challenge-03-practical/.env`:
 
-| Category | Points | Description |
-| :--- | :---: | :--- |
-| **Core Functionality & Completeness** | 12 | Working implementation of all selected track requirements without critical crashes. |
-| **Architecture & System Design** | 8 | Clean separation of concerns, modular code structure, appropriate data modeling. |
-| **API & Data Quality / UI UX** | 6 | Clean, well-structured REST/GraphQL APIs and intuitive, responsive user experience. |
-| **Error Handling & Resilience** | 4 | Graceful handling of invalid inputs, network failures, and boundary conditions. |
-| **Documentation & Developer Experience** | 3 | Flawless local setup instructions, architectural explanations, and clear environment templates. |
-| **Deployment / Live Demo (Bonus)** | 2 | Live deployed preview or containerized Docker execution. |
+```env
+DATABASE_URL="postgresql://user:password@ep-aged-resonance-pooler.aws.neon.tech/neondb?sslmode=require"
+```
+
+*(See `.env.example` for placeholder reference).*
+
+---
+
+## 🔄 8. Prisma Setup & Migration Commands
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Push Database Schema (When database is reachable)
+npx prisma db push
+
+# Seed Database with GDG Demo Data
+npx prisma db seed
+```
+
+---
+
+## 🧪 9. How to Run Tests & Verification
+
+```bash
+# Run TypeScript compilation check
+npx tsc --noEmit
+
+# Run ESLint linter
+npm run lint
+
+# Run verification test suite
+npm test
+```
+
+---
+
+## 🚀 10. How to Run Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 🎭 11. Demo / Mock Authentication Explanation
+To evaluate student and mentor features without complex OAuth or session setups:
+- An **Identity Selector** widget is located in the top navigation bar.
+- Evaluators can toggle active user personas between predefined student profiles (*Aarav Sharma*, *Diya Patel*) and mentor profiles (*Dr. Vikram Seth*, *Priya Sundaram*), or enter custom UUIDs.
+- Form submissions automatically pre-fill `studentId` or `mentorId` based on the currently selected persona.
+
+---
+
+## ⚠️ 12. Known Limitations
+1. **Network Connectivity**: In offline or firewalled environments, Neon PostgreSQL database connections may fail to resolve DNS (`P1001`). The backend and frontend are architected to build and compile cleanly regardless.
+2. **Mock Auth**: Production JWT/OAuth authentication is intentionally omitted for this assessment.

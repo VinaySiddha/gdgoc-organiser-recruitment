@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GDG on Campus SVEC — Event Check-In & Badge Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --card-bg: #131B2E;
+      --card-border: #1E293B;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --google-blue: #4285F4;
+      --google-red: #EA4335;
+      --google-yellow: #FBBC04;
+      --google-green: #34A853;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: rgba(19, 27, 46, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .brand-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-blue { background: var(--google-blue); }
+    .dot-red { background: var(--google-red); }
+    .dot-yellow { background: var(--google-yellow); }
+    .dot-green { background: var(--google-green); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--google-blue);
+      color: white;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .view-panel { display: none; }
+    .view-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #090D16;
+      border: 1px solid #26334D;
+      color: white;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--google-blue);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: var(--google-blue); color: white; width: 100%; }
+    .btn-primary:hover { background: #3367D6; }
+    .btn-success { background: var(--google-green); color: white; }
+    .btn-success:hover { background: #2E944B; }
+
+    .ticket-pass {
+      background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+      border: 2px solid var(--google-blue);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-box {
+      background: #090D16;
+      border: 1px solid #1E293B;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--google-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metric-label {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    th { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+
+    .status-tag {
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-verified { background: rgba(52, 168, 83, 0.15); color: #4ADE80; border: 1px solid #22C55E; }
+    .status-pending { background: rgba(251, 188, 4, 0.15); color: #FDE047; border: 1px solid #EAB308; }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .alert-success { background: rgba(52, 168, 83, 0.2); border: 1px solid var(--google-green); color: #86EFAC; }
+    .alert-danger { background: rgba(234, 67, 53, 0.2); border: 1px solid var(--google-red); color: #FCA5A5; }
+    .alert-warning { background: rgba(251, 188, 4, 0.2); border: 1px solid var(--google-yellow); color: #FDE68A; }
+
+    #badgeContainer svg {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-dots">
+        <div class="dot dot-blue"></div>
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+      </div>
+      <span>GDG DevFest SVEC Hub</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('registerView')">1. Register</button>
+      <button class="tab-btn" onclick="switchTab('checkinView')">2. QR Check-In</button>
+      <button class="tab-btn" onclick="switchTab('metricsView')">3. Live Dashboard</button>
+      <button class="tab-btn" onclick="switchTab('badgeView')">4. Social Badge</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: REGISTRATION -->
+    <section id="registerView" class="view-panel active">
+      <div class="grid-2">
+        <div class="card">
+          <h2 class="card-title">🎟️ Student Event Registration</h2>
+          <p class="card-desc">Register for GDG on Campus SVEC 4.0 DevFest workshops.</p>
+          
+          <div id="regAlert"></div>
+
+          <form id="regForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="regName" placeholder="e.g. John Doe" required>
+            </div>
+            <div class="form-group">
+              <label>College Email</label>
+              <input type="email" id="regEmail" placeholder="student@sves.org.in" required>
+            </div>
+            <div class="form-group">
+              <label>Roll Number</label>
+              <input type="text" id="regRoll" placeholder="e.g. 22A81A0501" required>
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <select id="regDept" required>
+                <option value="Computer Science">Computer Science & Engineering (CSE)</option>
+                <option value="Information Technology">Information Technology (IT)</option>
+                <option value="AI & Data Science">AI & Data Science (AIDS)</option>
+                <option value="Electronics & Comm">Electronics & Comm (ECE)</option>
+                <option value="Electrical Engineering">Electrical & Electronics (EEE)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Complete Registration & Generate Pass</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">📱 Digital Event Pass</h2>
+          <p class="card-desc">Your verified ticket will appear here upon registration.</p>
+          <div id="passOutput" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            Fill the form on the left to instantly issue your ticket and QR pass.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: ORGANIZER CHECK-IN -->
+    <section id="checkinView" class="view-panel">
+      <div class="card" style="max-width: 680px; margin: 0 auto;">
+        <h2 class="card-title">⚡ Organizer Rapid QR Check-In Terminal</h2>
+        <p class="card-desc">Simulate camera scan or enter ticket ID to verify attendee and prevent duplicate entrance.</p>
+
+        <div id="checkinAlert"></div>
+
+        <form id="checkinForm" onsubmit="handleCheckIn(event)" style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+          <input type="text" id="checkinTicketId" placeholder="Scan or enter Ticket ID (e.g. GDG-2026-1001)" required style="font-family: 'JetBrains Mono', monospace; font-size: 1.1rem;">
+          <button type="submit" class="btn btn-success" style="white-space: nowrap;">Check-In</button>
+        </form>
+
+        <div id="checkinResultCard" style="display: none;"></div>
+
+        <div style="margin-top: 2rem;">
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-muted);">Quick-Test Sample Tickets:</h3>
+          <div id="quickTickets" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LIVE DASHBOARD -->
+    <section id="metricsView" class="view-panel">
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-value" id="mTotalReg">0</div>
+          <div class="metric-label">Total Registered</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" id="mTotalChecked" style="color: var(--google-green);">0</div>
+          <div class="metric-label">Checked In</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" id="mPct">0%</div>
+          <div class="metric-label">Turnout Rate</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-value" id="mVelocity" style="color: var(--google-yellow);">0</div>
+          <div class="metric-label">Velocity (req/min)</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">📋 Live Attendee Registry & Check-In Manifest</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Check-In Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="attendeeTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SOCIAL BADGE -->
+    <section id="badgeView" class="view-panel">
+      <div class="grid-2">
+        <div class="card">
+          <h2 class="card-title">🎨 Personalized Social Badge Studio</h2>
+          <p class="card-desc">Customize your high-res social media badge to celebrate your participation.</p>
+
+          <div class="form-group">
+            <label>Select Attendee</label>
+            <select id="badgeTicketSelect" onchange="refreshBadgePreview()"></select>
+          </div>
+          <div class="form-group">
+            <label>Badge Theme</label>
+            <select id="badgeTheme" onchange="refreshBadgePreview()">
+              <option value="google">Classic Google (Slate & Primary Accents)</option>
+              <option value="dark">Stealth Dark (Emerald Green Accent)</option>
+              <option value="gradient">Vibrant Gradient (Ruby Crimson Accent)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Event Role</label>
+            <select id="badgeRole" onchange="refreshBadgePreview()">
+              <option value="Verified Attendee">Verified Attendee</option>
+              <option value="Speaker">Speaker / Mentor</option>
+              <option value="Organizer">GDG Organizer</option>
+              <option value="Volunteer">Student Volunteer</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="downloadBadge()">Download Badge SVG</button>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">✨ Live Social Card Preview</h2>
+          <div id="badgeContainer" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabId === 'metricsView') loadMetrics();
+      if (tabId === 'checkinView') loadQuickTickets();
+      if (tabId === 'badgeView') loadBadgeAttendees();
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        rollNumber: document.getElementById('regRoll').value,
+        department: document.getElementById('regDept').value
+      };
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('regAlert').innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+          return;
+        }
+
+        document.getElementById('regAlert').innerHTML = `<div class="alert alert-success">Registration Successful! Ticket ID: <strong>${data.attendee.ticketId}</strong></div>`;
+        document.getElementById('regForm').reset();
+
+        renderTicketPass(data.attendee);
+      } catch (err) {
+        document.getElementById('regAlert').innerHTML = `<div class="alert alert-danger">Error submitting registration</div>`;
+      }
+    }
+
+    function renderTicketPass(att) {
+      document.getElementById('passOutput').innerHTML = `
+        <div class="ticket-pass">
+          <div style="font-size: 0.8rem; color: var(--google-blue); font-weight: 700; letter-spacing: 1px;">GDG DEVFEST SVEC 2026 PASS</div>
+          <h3 style="font-size: 1.5rem; margin: 0.5rem 0;">${att.name}</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">${att.department} • ${att.rollNumber}</p>
+          <div style="margin: 1.25rem 0; padding: 0.75rem; background: #090D16; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: bold; color: var(--google-yellow);">
+            ${att.ticketId}
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Present this Ticket ID at the entrance desk for instant check-in.</div>
+        </div>
+      `;
+    }
+
+    async function handleCheckIn(e) {
+      e.preventDefault();
+      const ticketId = document.getElementById('checkinTicketId').value.trim();
+      const alertDiv = document.getElementById('checkinAlert');
+      const resultCard = document.getElementById('checkinResultCard');
+
+      try {
+        const res = await fetch('/api/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticketId })
+        });
+        const data = await res.json();
+
+        if (res.status === 409) {
+          alertDiv.innerHTML = `<div class="alert alert-warning">${data.message}</div>`;
+        } else if (!res.ok) {
+          alertDiv.innerHTML = `<div class="alert alert-danger">${data.message || data.error}</div>`;
+        } else {
+          alertDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        }
+
+        if (data.attendee) {
+          resultCard.style.display = 'block';
+          resultCard.innerHTML = `
+            <div class="card" style="background: #090D16; border-color: ${data.attendee.checkedIn ? 'var(--google-green)' : 'var(--google-red)'}; margin-top: 1rem;">
+              <h4 style="color: white; margin-bottom: 4px;">${data.attendee.name}</h4>
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Roll: ${data.attendee.rollNumber} | Dept: ${data.attendee.department}</p>
+              <div style="margin-top: 8px;">Status: <span class="status-tag ${data.attendee.checkedIn ? 'status-verified' : 'status-pending'}">${data.attendee.checkedIn ? 'CHECKED-IN' : 'PENDING'}</span></div>
+            </div>
+          `;
+        }
+        loadQuickTickets();
+      } catch (err) {
+        alertDiv.innerHTML = `<div class="alert alert-danger">Check-in connection error</div>`;
+      }
+    }
+
+    async function loadQuickTickets() {
+      const res = await fetch('/api/attendees');
+      const data = await res.json();
+      const container = document.getElementById('quickTickets');
+      container.innerHTML = data.attendees.map(a => `
+        <button type="button" class="btn" style="background: #1E293B; color: #E2E8F0; font-size: 0.8rem; padding: 6px 12px;" onclick="document.getElementById('checkinTicketId').value='${a.ticketId}'; document.getElementById('checkinForm').dispatchEvent(new Event('submit'))">
+          ${a.ticketId} (${a.name}) ${a.checkedIn ? '✓' : ''}
+        </button>
+      `).join('');
+    }
+
+    async function loadMetrics() {
+      const [mRes, aRes] = await Promise.all([
+        fetch('/api/metrics'),
+        fetch('/api/attendees')
+      ]);
+      const mData = await mRes.json();
+      const aData = await aRes.json();
+
+      document.getElementById('mTotalReg').innerText = mData.metrics.totalRegistered;
+      document.getElementById('mTotalChecked').innerText = mData.metrics.totalCheckedIn;
+      document.getElementById('mPct').innerText = mData.metrics.checkInPercentage + '%';
+      document.getElementById('mVelocity').innerText = mData.metrics.checkInVelocityPerMinute;
+
+      const tbody = document.getElementById('attendeeTableBody');
+      tbody.innerHTML = aData.attendees.map(a => `
+        <tr>
+          <td style="font-family: 'JetBrains Mono', monospace; font-weight: bold; color: var(--google-yellow);">${a.ticketId}</td>
+          <td><strong>${a.name}</strong></td>
+          <td>${a.rollNumber}</td>
+          <td>${a.department}</td>
+          <td><span class="status-tag ${a.checkedIn ? 'status-verified' : 'status-pending'}">${a.checkedIn ? 'Checked In' : 'Registered'}</span></td>
+          <td style="font-size: 0.8rem; color: var(--text-muted);">${a.checkedInAt ? new Date(a.checkedInAt).toLocaleTimeString() : '—'}</td>
+          <td>
+            <button class="btn" style="background: var(--google-blue); padding: 4px 10px; font-size: 0.75rem;" onclick="viewBadgeFor('${a.ticketId}')">Badge</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadBadgeAttendees() {
+      const res = await fetch('/api/attendees');
+      const data = await res.json();
+      const select = document.getElementById('badgeTicketSelect');
+      select.innerHTML = data.attendees.map(a => `
+        <option value="${a.ticketId}">${a.name} (${a.ticketId})</option>
+      `).join('');
+      refreshBadgePreview();
+    }
+
+    function viewBadgeFor(ticketId) {
+      switchTab('badgeView');
+      setTimeout(() => {
+        document.getElementById('badgeTicketSelect').value = ticketId;
+        refreshBadgePreview();
+      }, 100);
+    }
+
+    async function refreshBadgePreview() {
+      const ticketId = document.getElementById('badgeTicketSelect').value;
+      if (!ticketId) return;
+      const theme = document.getElementById('badgeTheme').value;
+      const role = document.getElementById('badgeRole').value;
+
+      const res = await fetch(`/api/badge/${ticketId}?theme=${theme}&role=${encodeURIComponent(role)}`);
+      const svgText = await res.text();
+      document.getElementById('badgeContainer').innerHTML = svgText;
+    }
+
+    function downloadBadge() {
+      const ticketId = document.getElementById('badgeTicketSelect').value;
+      const theme = document.getElementById('badgeTheme').value;
+      const role = document.getElementById('badgeRole').value;
+      window.open(`/api/badge/${ticketId}?theme=${theme}&role=${encodeURIComponent(role)}`, '_blank');
+    }
+
+    // Auto-load
+    loadQuickTickets();
+  </script>
+</body>
+</html>

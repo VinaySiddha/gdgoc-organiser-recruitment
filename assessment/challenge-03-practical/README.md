@@ -1,115 +1,105 @@
-# 🛠️ Challenge 03 — Practical GDG Community Engineering Project
-**Evaluation Weight:** 35 Points  
-**Recommended Time:** 8 – 10 Hours  
-**Deliverable:** Fully functional working project, clean codebase, architecture documentation, setup instructions, and optional live demo.
+# 🎟️ Challenge 03 — GDG Event Check-In & Dynamic Social Badge Hub
+**Track:** Track A — Event Check-In & Dynamic Social Badge Hub
+**Author:** Candidate (GDG on Campus SVEC 4.0 Organizer Selection)
+**Tech Stack:** Node.js, Express, TypeScript, Pure SVG / Canvas Rendering, Vanilla HTML5/CSS3
 
 ---
 
-## 📌 Context: Building for the GDG on Campus Community
+## 📌 Project Overview
 
-As a GDG on Campus Organizer at SVEC, you will build tools, platforms, and services that directly impact hundreds of student developers, event attendees, hackathon participants, and workshop mentors.
+The **GDG Event Check-In & Dynamic Social Badge Hub** is an end-to-end community utility built specifically for GDG DevFest and campus tech summits at Sri Vasavi Engineering College (SVEC).
 
-This challenge evaluates your ability to take a **real-world community problem from concept to working software**, demonstrating sound architectural choices, clean code, good UX/API design, and professional engineering ownership.
+### Real Community Problem Solved:
+1. **Entrance Bottlenecks:** For large GDG summits (500+ attendees), manual registration lookups create massive queues and entrance chaos.
+2. **Duplicate Check-In Risks:** Attendees sharing badges or double-checking in inflate attendance counts and compromise accurate certificate distribution.
+3. **Social Hype & Engagement:** Students want personalized, high-resolution social badges to share on LinkedIn, Twitter, and WhatsApp to celebrate their participation.
+4. **Organizer Blindspots:** Core team organizers need real-time visibility into attendance counts, department participation rates, and check-in velocity.
 
 ---
 
-## 🎯 Choose Your Track
-
-You may select **ONE** of the following three community projects to build:
+## 🏗️ Architecture & Component Design
 
 ```mermaid
-graph TD
-    A[Challenge 03 Options] --> B[Track A: Event Check-In & Dynamic Badge Hub]
-    A --> C[Track B: Smart RSVP & Automated Waitlist Engine]
-    A --> D[Track C: Campus Project Showcase & Review Portal]
+flowchart TD
+    Client[Browser Frontend / Single Page App]
+    API[Express REST API Router /api]
+    Store[Thread-Safe In-Memory Store Service]
+    Badge[Dynamic SVG Badge Engine]
+
+    Client -->|POST /api/register| API
+    Client -->|POST /api/checkin| API
+    Client -->|GET /api/metrics| API
+    Client -->|GET /api/badge/:ticketId| API
+
+    API --> Store
+    API --> Badge
+    Badge --> Store
 ```
 
----
-
-### 🎟️ Track A: Event Check-In & Dynamic Social Badge Hub
-*Ideal for candidates passionate about Full-Stack development, UX, and interactive web tools.*
-
-**Problem:** For large GDG workshops, manual check-in creates massive queues at the hall entrance, and attendees want digital badges to share on LinkedIn/Twitter/Instagram.
-
-**Core Requirements:**
-1. **Attendee Registration & QR Pass:** Generate a unique ticket/QR code upon student registration.
-2. **Organizer Check-in Scanner / API:** A rapid scanner interface or API endpoint that validates tickets, prevents duplicate check-ins, and marks attendance.
-3. **Dynamic Social Badge Generator:** Allow verified attendees to customize and generate a downloadable/shareable personalized GDG attendee badge (using Canvas, SVG, or server-side image generation).
-4. **Live Attendance Dashboard:** Display real-time attendance counts, check-in velocity, and department breakdowns.
+### Modular Components:
+- **`src/models/types.ts`:** Domain models for Attendees, Tickets, Check-In Records, Metrics, and Badges.
+- **`src/services/store.service.ts`:** Thread-safe state repository managing indexing (by Ticket ID, Roll Number, and Email), atomic check-in transitions, and real-time velocity metrics.
+- **`src/services/badge.service.ts`:** Programmatic SVG badge generation engine applying Google Developer branding (#4285F4, #EA4335, #FBBC04, #34A853), personalized metadata, verified attendee seals, and social tags.
+- **`src/controllers/attendee.controller.ts`:** Validates registrations, manages attendee lists, and serves badge assets.
+- **`src/controllers/checkin.controller.ts`:** Rapid ticket validation, duplicate check-in defense (HTTP 409), and live dashboard metrics.
+- **`src/routes/api.routes.ts`:** Declarative routing mapping HTTP operations to controller actions.
+- **`src/public/index.html`:** Clean, responsive, glassmorphic UI featuring tabs for registration, organizer terminal, live analytics, and interactive badge customizer.
 
 ---
 
-### ⚡ Track B: Smart Workshop RSVP & Automated Waitlist Engine
-*Ideal for candidates focusing on Backend, Distributed Systems, APIs, and Robust State Management.*
+## 🚀 Setup & Local Execution Guide
 
-**Problem:** High-demand GDG workshops (e.g. Cloud Study Jams, Flutter Bootcamps) fill up within minutes. When registered students fail to show up, waitlisted students miss out.
+Follow these exact steps to install and run the application locally:
 
-**Core Requirements:**
-1. **Capacity-Gated RSVP API:** Enforce strict seat caps with atomic reservation handling.
-2. **Smart Waitlist & Timed Release:** When a registered user cancels, automatically promote the next waitlisted user and assign a time-limited claim window (e.g., 2 hours to confirm before expiring to the next person).
-3. **Admin Controls & Batch Operations:** Endpoints to bulk-import attendees, broadcast status updates, and export attendee manifests in CSV/JSON format.
-4. **Webhook Notification Dispatcher:** Trigger notifications (simulated or real Discord/Slack/Email webhooks) on registration, waitlist promotion, and cancellation.
-
----
-
-### 💡 Track C: Student Project Showcase & Mentorship Review Portal
-*Ideal for candidates interested in Platform Development, Content Management, and Community Engagement.*
-
-**Problem:** After hackathons and study jams, student projects are often forgotten in disconnected GitHub repos. GDG needs a centralized showcase with structured feedback from core team mentors.
-
-**Core Requirements:**
-1. **Project Submission & GitHub Metadata:** Allow students to submit project details, tech stack tags, demo links, and GitHub repository URLs.
-2. **Interactive Showcase Feed:** Filter and search projects by domain (AI/ML, Web, Mobile, Cloud, IoT), year, and tech stack.
-3. **Structured Mentor Review System:** Organizers can evaluate submissions using a standardized rubric (Code Quality, Innovation, Completeness) with feedback comments.
-4. **Leaderboard / Featured Projects:** Compute overall score rankings and highlight top community projects on the homepage.
-
----
-
-## 🛠️ Technology Stack Freedom
-
-You are **100% free to choose your tech stack**. Use the technologies you are most productive in:
-
-- **Frontend:** React, Next.js, Vue, Nuxt, Svelte, Angular, Tailwind CSS, HTML5/Vanilla JS, Flutter Web.
-- **Backend:** Node.js (Express/Fastify/NestJS), Python (FastAPI/Django/Flask), Go, Java/Kotlin (Spring Boot/Ktor), Rust.
-- **Storage / Database:** SQLite, PostgreSQL, MongoDB, Redis, In-Memory Store, Firebase, Supabase, or JSON file persistence.
-- **Packaging:** Docker / Docker Compose (Optional, but highly appreciated).
-
----
-
-## 📦 Minimum Deliverables Checklist
-
-- [ ] **Working Application Code:** Fully implemented frontend and/or backend in `assessment/challenge-03-practical/`.
-- [ ] **Clear Setup Guide:** Exact step-by-step commands to install dependencies, run migrations, and start the app locally.
-- [ ] **Environment Template:** `.env.example` with documented configuration keys (no real secrets!).
-- [ ] **Architecture Overview:** A brief explanation (and optional diagram) in your project README explaining your data model, APIs, and component design.
-- [ ] **Meaningful Git History:** Demonstrating steady, incremental progress through atomic commits.
-- [ ] **Bonus / Optional:** Live deployed URL (Vercel, Netlify, Render, Railway, Fly.io, etc.).
-
----
-
-## 📂 Recommended Directory Structure
-
-```
-assessment/challenge-03-practical/
-├── README.md               # Project overview, setup guide & architecture notes
-├── .env.example            # Sample configuration
-├── package.json / requirements.txt / go.mod / Dockerfile
-├── src/                    # Application source code
-│   ├── frontend/           # (If applicable)
-│   ├── backend/            # (If applicable)
-│   └── ...
-└── tests/                  # Project unit / integration tests
+### 1. Install Dependencies
+```bash
+cd assessment/challenge-03-practical
+npm install
 ```
 
+### 2. Configure Environment (Optional)
+```bash
+cp .env.example .env
+```
+Default configuration runs on port `3000` with zero external database dependencies required.
+
+### 3. Run Automated Integration Tests
+```bash
+npm test
+```
+Executes the comprehensive 8-scenario test suite covering registration, validation, duplicate prevention, rapid check-in, duplicate check-in blocking, metrics, and SVG badge rendering.
+
+### 4. Run TypeScript Compilation & Linter Check
+```bash
+npm run lint
+npm run build
+```
+
+### 5. Start the Application
+```bash
+npm start
+```
+Open your browser and navigate to:
+**`http://localhost:3000`**
+
 ---
 
-## ⚖️ Scoring Criteria (35 Points)
+## 📡 REST API Specification
 
-| Category | Points | Description |
-| :--- | :---: | :--- |
-| **Core Functionality & Completeness** | 12 | Working implementation of all selected track requirements without critical crashes. |
-| **Architecture & System Design** | 8 | Clean separation of concerns, modular code structure, appropriate data modeling. |
-| **API & Data Quality / UI UX** | 6 | Clean, well-structured REST/GraphQL APIs and intuitive, responsive user experience. |
-| **Error Handling & Resilience** | 4 | Graceful handling of invalid inputs, network failures, and boundary conditions. |
-| **Documentation & Developer Experience** | 3 | Flawless local setup instructions, architectural explanations, and clear environment templates. |
-| **Deployment / Live Demo (Bonus)** | 2 | Live deployed preview or containerized Docker execution. |
+| Method | Endpoint | Description | Status Codes |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/register` | Register a new attendee and issue ticket | `201 Created`, `400 Bad Request` |
+| `GET` | `/api/attendees` | Search and filter registered attendees | `200 OK` |
+| `GET` | `/api/attendees/:ticketId` | Fetch attendee details by ticket ID | `200 OK`, `404 Not Found` |
+| `POST` | `/api/checkin` | Rapid ticket check-in and attendance recording | `200 OK`, `404 Not Found`, `409 Conflict` |
+| `GET` | `/api/metrics` | Real-time attendance counts and velocity | `200 OK` |
+| `GET` | `/api/badge/:ticketId` | Generate personalized vector SVG badge | `200 OK`, `404 Not Found` |
+| `GET` | `/health` | Service health status | `200 OK` |
+
+---
+
+## 🛡️ Security & Defensive Engineering
+- **Duplicate Prevention:** Enforces strict uniqueness on attendee emails and student roll numbers.
+- **Duplicate Check-In Guard:** Atomic check-in state checking prevents multi-entrance ticket sharing with an instant `409 Conflict` alert.
+- **Safe Environment Defaults:** No production secrets or credentials committed; template provided in `.env.example`.
+- **Zero Heavy Infrastructure:** Runs self-contained in memory without external database setup overhead.

@@ -8,120 +8,405 @@
 
 - **Candidate Name:** Jitendra Sri Talabattula
 - **GitHub Username:** JitendraSri
-- **Year:** 4th Year (B.Tech) — CSE AI, SVEC Vizag
-- **Department:** Computer Science Engineering (Artificial Intelligence) — SVEC, Vizag
+- **Year:** 4th Year (B.Tech) — CSE AI, SVEC
+- **Department:** Computer Science Engineering (Artificial Intelligence) — SVEC
 - **College Email / Contact:** 23a81a4361@sves.org.in
 
 ---
 
 ## 📌 Executive Summary
 
-- **Challenge Completed:**
-  - [x] Challenge 01 — Debugging & Root-Cause Analysis
-  - [x] Challenge 02 — Coding & Problem Solving
-  - [x] Challenge 03 — Practical GDG Community Solution
-- **Tech Stack:** TypeScript (ES2022 / NodeNext), Node.js (v20/v22), Express, Node Test Runner, Supertest, Modern Vanilla CSS / HTML5, SVG Graphic Rendering Engine
-- **Repository URL:** [YOUR GITHUB REPOSITORY URL]
-- **Live Demo URL (if applicable):** Local execution via http://localhost:3000
+### Challenges Completed
+
+- [x] Challenge 01 — Debugging & Root-Cause Analysis
+- [x] Challenge 02 — Coding & Problem Solving
+- [x] Challenge 03 — Practical GDG Community Solution
+
+### Technology Stack
+
+- **Language:** TypeScript
+- **ECMAScript Target:** ES2022
+- **Module System:** NodeNext
+- **Runtime:** Node.js v20/v22
+- **Backend:** Express
+- **Testing:** Node Test Runner, Supertest
+- **Frontend:** HTML5, Modern Vanilla CSS, JavaScript
+- **Graphics:** SVG-based badge rendering
+- **Architecture:** Modular layered architecture
+
+### Repository
+
+**GitHub Repository:**  
+https://github.com/JitendraSri/gdgoc-organiser-recruitment
+
+**Submission Branch:**  
+`submission/jitendra`
+
+### Live Demo
+
+The application is not publicly deployed.
+
+It can be executed locally at:
+
+`http://localhost:3000`
 
 ---
 
-## 🛠️ Challenge 01 — Debugging & Root-Cause Analysis Summary
+# 🛠️ Challenge 01 — Debugging & Root-Cause Analysis
 
-- **Root Cause Identified:** The original `EventDispatcher` contained five critical flaws: (1) Shared instance state via `activeContext` causing severe cross-talk race conditions between concurrent requests; (2) Timezone-naive date parsing that failed on explicit offsets like Indian Standard Time (`+05:30`); (3) Fire-and-forget asynchronous webhook execution leading to unhandled promise rejections; (4) Immediate tight-loop retries without exponential backoff causing cascading failure; and (5) Silent failure swallowing.
-- **Fix Implemented:** Fully refactored `EventDispatcher` in `assessment/challenge-01-debugging/src/dispatcher.ts` using isolated lexical scope per request, defensive cloning, regex-based ISO-8601 validation preserving exact UTC and local offsets, injectable sleep/sender architecture, bounded exponential backoff ($2^{attempt-2}$ delay), and tracked promise lifecycles.
-- **Regression Testing Strategy:** Implemented 12 comprehensive test scenarios in `tests/dispatcher.test.ts` covering 50 concurrent registrations with zero data contamination, reproduction of the original race condition, transient 503 retries, timeout enforcement, permanent failures, timezone offset preservation, and duplicate ID prevention.
-- *(Full details in `assessment/challenge-01-debugging/DEBUG_REPORT.md`)*
+## Root Cause Identified
 
----
+The original `EventDispatcher` contained five critical flaws:
 
-## ⚙️ Challenge 02 — Coding & Problem Solving Summary
+1. **Shared mutable request state**
+   - The `activeContext` instance property caused request-specific state to be shared between concurrent requests.
+   - This resulted in cross-talk and race-condition behavior.
 
-- **Language & Runtime:** TypeScript / Node.js
-- **Algorithm & Data Structures Used:** Kahn's Algorithm for topological sorting and 3-color cycle detection; greedy interval scheduling with dynamic candidate start time evaluation; multi-attribute deterministic sorting; Map/Set index lookups.
-- **Time Complexity:** $O(N \log N + N \cdot R \cdot W \cdot S)$ where $N$ is sessions, $R$ is rooms, $W$ is windows, and $S$ is existing slots. Benchmark executes 120 sessions across 10 rooms in ~23ms (well under the 1000ms threshold).
-- **Space Complexity:** $O(N + R + K)$ to maintain room timelines, speaker allocations, and dependency graphs.
-- **Edge Cases Handled:** Empty inputs, prerequisite cycles ($A \to B \to A$ and deep multi-hop cycles), missing prerequisite IDs, room capacity mismatches, speaker overlaps across different rooms, consecutive room turnover buffer (10 min gap), operating window overflows, and duplicate session IDs.
+2. **Timezone-naive date parsing**
+   - Date handling did not correctly preserve explicit ISO-8601 timezone offsets such as `+05:30`.
 
----
+3. **Fire-and-forget asynchronous execution**
+   - Webhook execution was not properly tracked, creating the possibility of unhandled promise rejections and incomplete request lifecycles.
 
-## 🚀 Challenge 03 — Practical Project Breakdown
+4. **Immediate retry loop**
+   - Failed operations were retried without appropriate exponential backoff, potentially increasing load during service failures.
 
-### Overview & Problem Solved
-Built Track A: **Event Check-In & Dynamic Social Badge Hub**. It solves manual registration bottlenecks, duplicate ticket fraud, and lack of real-time attendance visibility during major campus developer gatherings (GDG DevFest SVEC).
+5. **Silent failure handling**
+   - Certain failures were swallowed instead of being surfaced clearly to the caller or error-handling path.
 
-### Architecture & System Design
-Follows a modular, layered architecture:
-- **Models (`src/models/types.ts`):** Defines strict TypeScript interfaces for attendees, check-in payloads, and analytics.
-- **Service Layer (`src/services/`):** `StoreService` provides thread-safe in-memory caching with composite indexing (Ticket ID, Roll Number, Email) and velocity tracking. `BadgeService` generates personalized vector SVG badges.
-- **Controller Layer (`src/controllers/`):** `AttendeeController` and `CheckInController` handle validation, ticket issuance, double check-in prevention (`HTTP 409 Conflict`), and metrics reporting.
-- **Presentation (`src/public/`):** Single-page web application featuring Google-branded glassmorphic UI, live dashboard charts, check-in scanner simulator, and badge studio.
+## Fix Implemented
 
-### Key Features Delivered
-1. **Attendee Registration & QR Pass:** Issues unique `GDG-2026-XXXX` ticket IDs and embedded QR payload upon student registration with duplicate roll/email defense.
-2. **Rapid Check-In & Duplicate Prevention Guard:** Verifies tickets instantaneously and blocks reuse attempts with clear conflict alerts.
-3. **Live Attendance Analytics Dashboard:** Displays real-time turnout rates, registration velocity (req/min), and department breakdown.
-4. **Dynamic SVG Social Badge Studio:** Generates customizable vector attendee badges with role badges, Google accent gradients, and instant download.
+The `EventDispatcher` was refactored in:
 
-### Setup & Local Execution Guide
-```bash
-# 1. Navigate to Challenge 03 directory
-cd assessment/challenge-03-practical
+`assessment/challenge-01-debugging/src/dispatcher.ts`
 
-# 2. Install dependencies
-npm install
+The implementation uses:
 
-# 3. Environment configuration (optional)
-cp .env.example .env
+- Isolated request-local state
+- Defensive cloning where appropriate
+- ISO-8601 validation
+- Explicit timezone/offset handling
+- Injectable sender and sleep abstractions
+- Bounded exponential backoff
+- Proper promise lifecycle tracking
+- Explicit failure propagation
 
-# 4. Run automated integration tests
-npm test
+The retry strategy uses bounded exponential backoff based on the retry attempt.
 
-# 5. Start application
-npm start
-# Open http://localhost:3000 in your browser
-```
+## Regression Testing Strategy
 
----
+Comprehensive regression tests were implemented in:
 
-## 🤖 AI Assistance & Modern Tooling Disclosure
+`assessment/challenge-01-debugging/tests/dispatcher.test.ts`
 
-- **AI Tools Used:** Google Antigravity / Gemini 3.8
-- **How AI Was Used:** Code scaffolding, edge-case test generation, regex pattern synthesis for ISO-8601 validation, algorithm optimization for interval candidate evaluation, and markdown documentation formatting.
-- **Validation & Refactoring:** Every suggestion was rigorously compiled, reviewed against the repository specifications, refactored to eliminate assumptions, and verified through dedicated automated test suites.
-- *(Refer to `starter/AI_DISCLOSURE.md` for full detailed prompts and workflow logs).*
+The tests cover:
 
----
+- Concurrent registrations
+- Prevention of cross-request data contamination
+- Reproduction of the original race condition
+- Transient `503` failures and retry behavior
+- Timeout enforcement
+- Permanent failures
+- ISO-8601 timezone offset handling
+- Duplicate ID prevention
+- Asynchronous failure handling
 
-## 💡 Engineering Insights & Reflections
+### Result
 
-### Major Technical Decisions
-1. **Elimination of Shared Mutable State in EventDispatcher:**
-   - *Rationale:* Concurrency bugs in Node.js event loops occur when request state is stored on class instances (`this.activeContext`). Moving state into function parameters and immutable local copies eliminates race conditions without mutex locks.
-2. **Dynamic Candidate Start Times in Conference Scheduler:**
-   - *Rationale:* Evaluating candidate start times at window boundaries, after room buffers, AND when a speaker finishes other sessions guarantees conflict-free schedules without expensive fine-grained minute-by-minute discretization.
-3. **In-Memory Store with Multi-Key Indexing for Practical Project:**
-   - *Rationale:* Eliminates database setup friction for evaluators while maintaining $O(1)$ lookups and duplicate checks across Ticket ID, Email, and Student Roll Number.
+**Challenge 01 — PASS**
 
-### Known Limitations
-- *Limitation 1:* The conference scheduler employs greedy interval placement with deterministic ordering; while optimal for priority and seat utilization, mixed-integer linear programming (MILP) could achieve global theoretical optimal packings for small inputs.
-- *Limitation 2:* The in-memory data store for Challenge 03 resets on server restart; production deployment would back this with SQLite or PostgreSQL.
+Detailed analysis is available in:
 
-### What I Would Improve with More Time
-
-What I Would Improve: Hardware QR camera integration via WebRTC, persistent PostgreSQL storage, and WebSocket live dashboard push notifications.
-
-- *Improvement 1:* Add hardware QR scanner camera integration using WebRTC / `html5-qrcode` in the frontend check-in terminal.
-- *Improvement 2:* Implement persistent SQLite / PostgreSQL storage with Prisma ORM migrations for Challenge 03.
-- *Improvement 3:* Add WebSocket / SSE live push notifications to update organizer dashboards instantaneously as attendees cross the venue gate.
+`assessment/challenge-01-debugging/DEBUG_REPORT.md`
 
 ---
 
-## 📝 Candidate Self-Certification
+# ⚙️ Challenge 02 — Coding & Problem Solving
 
-- [x] I certify that all work presented is my own original solution (with AI tools responsibly disclosed).
-- [x] I have not committed any private keys, real credentials, or secrets in this repository.
-- [x] I am prepared to present, explain, and defend all architectural decisions and code during the technical interview.
+## Language & Runtime
 
-**Signature / Name:** Jitendra
-**Date:** 2026-09-08
+- **Language:** TypeScript
+- **Runtime:** Node.js
+- **Target:** ES2022
+- **Module System:** NodeNext
+
+## Algorithms & Data Structures
+
+The implementation uses:
+
+- **Kahn's Algorithm** for topological sorting
+- **Three-color cycle detection** for dependency validation
+- **Greedy interval scheduling**
+- Dynamic candidate start-time evaluation
+- Deterministic multi-attribute sorting
+- `Map` and `Set` based indexing
+- Room timeline tracking
+- Speaker allocation tracking
+
+## Time Complexity
+
+The scheduler operates at approximately:
+
+`O(N log N + N × R × W × S)`
+
+where:
+
+- `N` = number of sessions
+- `R` = number of rooms
+- `W` = number of scheduling windows
+- `S` = existing scheduled slots
+
+A benchmark involving approximately 120 sessions across 10 rooms completed in approximately 23 ms, remaining well below the 1000 ms performance threshold.
+
+## Space Complexity
+
+The implementation requires approximately:
+
+`O(N + R + K)`
+
+where the additional space is used for:
+
+- Dependency graphs
+- Room timelines
+- Speaker allocations
+- Scheduling metadata
+
+## Edge Cases Handled
+
+The scheduler handles:
+
+- Empty input
+- Missing prerequisite IDs
+- Direct prerequisite cycles
+- Deep multi-hop dependency cycles
+- Duplicate session IDs
+- Room capacity mismatches
+- Speaker conflicts across rooms
+- Consecutive room turnover requirements
+- Operating-window overflow
+- Scheduling constraints
+- Deterministic ordering
+
+A **10-minute room turnover buffer** is enforced where required.
+
+### Result
+
+**Challenge 02 — PASS**
+
+---
+
+# 🚀 Challenge 03 — Practical GDG Community Solution
+
+## Project
+
+### Event Check-In & Dynamic Social Badge Hub
+
+**Track:** Track A
+
+The project addresses common operational problems during large campus developer events, including:
+
+- Manual registration bottlenecks
+- Duplicate ticket usage
+- Slow event check-in
+- Lack of real-time attendance visibility
+- Lack of personalized attendee identity/badge generation
+
+The solution provides a lightweight event-management workflow suitable for a GDG on Campus community event.
+
+---
+
+## 🏗️ Architecture & System Design
+
+The application follows a modular layered architecture.
+
+### 1. Models
+
+Location:
+
+`assessment/challenge-03-practical/src/models/types.ts`
+
+The model layer defines strict TypeScript interfaces for:
+
+- Attendees
+- Registration data
+- Check-in payloads
+- Analytics data
+- Application state
+
+This provides compile-time type safety across the application.
+
+### 2. Service Layer
+
+Location:
+
+`assessment/challenge-03-practical/src/services/`
+
+#### StoreService
+
+`StoreService` provides centralized in-memory storage with composite indexing for:
+
+- Ticket ID
+- Roll Number
+- Email
+
+It also supports attendance and registration-related tracking required by the application.
+
+The in-memory design was chosen to keep the assessment easy to run without requiring an external database.
+
+#### BadgeService
+
+`BadgeService` generates personalized vector SVG badges containing attendee information and role-related visual elements.
+
+SVG was chosen because it provides:
+
+- Resolution-independent rendering
+- Lightweight output
+- Browser compatibility
+- Easy customization
+- Downloadable vector assets
+
+### 3. Controller Layer
+
+Location:
+
+`assessment/challenge-03-practical/src/controllers/`
+
+#### AttendeeController
+
+Responsible for:
+
+- Attendee registration
+- Input validation
+- Ticket generation
+- Duplicate registration prevention
+- Attendee retrieval
+
+#### CheckInController
+
+Responsible for:
+
+- Ticket verification
+- Check-in processing
+- Duplicate check-in prevention
+- Attendance metrics
+
+Duplicate check-in attempts are returned using:
+
+`HTTP 409 Conflict`
+
+### 4. Routes
+
+Location:
+
+`assessment/challenge-03-practical/src/routes/api.routes.ts`
+
+The routing layer exposes the application's API endpoints and connects incoming requests to the appropriate controllers.
+
+### 5. Presentation Layer
+
+Location:
+
+`assessment/challenge-03-practical/src/public/index.html`
+
+The frontend is implemented as a lightweight single-page interface using:
+
+- HTML5
+- Vanilla JavaScript
+- Modern CSS
+- SVG rendering
+
+The interface includes:
+
+- Registration workflow
+- Check-in interface
+- Attendance dashboard
+- Analytics visualization
+- Badge generation interface
+
+---
+
+# ✨ Key Features Delivered
+
+## 1. Attendee Registration & QR Pass
+
+The application:
+
+- Registers attendees
+- Generates unique ticket IDs
+- Uses the `GDG-2026-XXXX` ticket format
+- Generates a QR-related ticket payload
+- Prevents duplicate registration based on available attendee identifiers
+
+Duplicate Roll Number and Email registrations are handled through indexed lookups.
+
+## 2. Rapid Check-In & Duplicate Prevention
+
+The check-in system:
+
+- Validates submitted tickets
+- Confirms attendee identity
+- Records successful check-ins
+- Prevents reuse of already-used tickets
+- Returns clear conflict responses for duplicate check-ins
+
+Duplicate check-in attempts return:
+
+`HTTP 409 Conflict`
+
+## 3. Live Attendance Analytics Dashboard
+
+The dashboard provides event-level visibility including:
+
+- Registration count
+- Check-in count
+- Turnout rate
+- Registration velocity
+- Department breakdown
+- Attendance-related metrics
+
+## 4. Dynamic SVG Social Badge Studio
+
+The badge studio generates personalized SVG badges containing:
+
+- Attendee information
+- Role information
+- Event identity
+- Visual accent elements
+
+The resulting SVG can be downloaded and shared digitally.
+
+---
+
+# 📂 Project Structure
+
+The primary assessment implementation is organized as follows:
+
+```text
+assessment/
+├── challenge-01-debugging/
+│   ├── src/
+│   ├── tests/
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── DEBUG_REPORT.md
+│
+├── challenge-02-coding/
+│   ├── src/
+│   ├── tests/
+│   ├── package.json
+│   └── tsconfig.json
+│
+└── challenge-03-practical/
+    ├── src/
+    │   ├── controllers/
+    │   ├── models/
+    │   ├── routes/
+    │   ├── services/
+    │   ├── public/
+    │   ├── app.ts
+    │   └── server.ts
+    ├── tests/
+    ├── package.json
+    ├── tsconfig.json
+    ├── .env.example
+    └── README.md
